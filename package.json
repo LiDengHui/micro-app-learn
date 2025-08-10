@@ -10,7 +10,11 @@
     "dev:main": "npm --workspace apps/main-app run dev",
     "dev:react": "npm --workspace apps/sub-app-react run dev",
     "dev:vue": "npm --workspace apps/sub-app-vue run dev",
-    "dev:all": "concurrently \"npm run dev:main\" \"npm run dev:react\" \"npm run dev:vue\""
+    "dev:all": "concurrently \"npm run dev:main\" \"npm run dev:react\" \"npm run dev:vue\"",
+    "build:main": "npm --workspace apps/main-app run build",
+    "build:react": "npm --workspace apps/sub-app-react run build",
+    "build:vue": "npm --workspace apps/sub-app-vue run build",
+    "build:all": "concurrently \"npm run build:main\" \"npm run build:react\" \"npm run build:vue\""
   },
   "keywords": [],
   "author": "",

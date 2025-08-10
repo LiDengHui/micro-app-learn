@@ -1,11 +1,9 @@
 import {defineConfig} from 'vite'
-import qiankun from "vite-plugin-qiankun";
+import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig({
-    plugins: [qiankun('sub-app-react', {
-        useDevMode: true,
-    })],
+    plugins: [react()],
     base: '/',
     server: {
         port: 7101,
@@ -21,7 +19,15 @@ export default defineConfig({
             output: {
                 format: 'umd',
                 name: 'subAppReact',
+                globals: {
+                    react: 'React',
+                    'react-dom': 'ReactDOM'
+                },
+                entryFileNames: 'index.js'
             }
         }
+    },
+    define: {
+        global: 'window'
     }
 })

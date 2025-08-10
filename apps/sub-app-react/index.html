@@ -9,5 +9,15 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+        // For micro-app compatibility
+        // Ensure React and ReactDOM are available globally
+        if (typeof window.React === 'undefined') {
+            window.React = window.React || {};
+        }
+        if (typeof window.ReactDOM === 'undefined') {
+            window.ReactDOM = window.ReactDOM || {};
+        }
+    </script>
   </body>
 </html>

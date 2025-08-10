@@ -1,0 +1,20 @@
+import { createApp } from "vue";
+import ElementPlus from "element-plus";
+import "element-plus/dist/index.css";
+import App from "./App.vue";
+import "./style.scss";
+import microApp from "@micro-zoe/micro-app";
+
+// Initialize micro-app
+microApp.start({
+  "router-mode": "history",
+});
+
+// Handle micro-app lifecycle
+microApp.addDataListener("main-app", (data: any) => {
+  console.log("Received data from micro-app:", data);
+});
+
+const app = createApp(App);
+app.use(ElementPlus);
+app.mount("#app");

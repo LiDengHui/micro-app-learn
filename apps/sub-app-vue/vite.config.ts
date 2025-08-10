@@ -1,16 +1,12 @@
 import {defineConfig} from 'vite'
 import vue from '@vitejs/plugin-vue'
-import qiankun from 'vite-plugin-qiankun'
 
 // https://vite.dev/config/
 export default defineConfig({
-    plugins: [vue(), qiankun('sub-app-vue', {
-        useDevMode: true,
-    })],
-
+    plugins: [vue()],
     base: '/',
     server: {
-        port: 7101,
+        port: 7102,
         cors: true,
         headers: {
             'Access-Control-Allow-Origin': '*',
@@ -22,7 +18,11 @@ export default defineConfig({
         rollupOptions: {
             output: {
                 format: 'umd',
-                name: 'subAppReact',
+                name: 'subAppVue',
+                globals: {
+                    vue: 'Vue'
+                },
+                entryFileNames: 'index.js'
             }
         }
     }
