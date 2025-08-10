@@ -1,29 +1,34 @@
-import {defineConfig} from 'vite'
-import vue from '@vitejs/plugin-vue'
+import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue";
 
 // https://vite.dev/config/
 export default defineConfig({
-    plugins: [vue()],
-    base: '/',
-    server: {
-        port: 7102,
-        cors: true,
-        headers: {
-            'Access-Control-Allow-Origin': '*',
-        },
+  plugins: [vue()],
+  base: "/",
+  server: {
+    port: 7102,
+    cors: true,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
     },
-    build: {
-        target: 'esnext',
-        cssCodeSplit: false,
-        rollupOptions: {
-            output: {
-                format: 'umd',
-                name: 'subAppVue',
-                globals: {
-                    vue: 'Vue'
-                },
-                entryFileNames: 'index.js'
-            }
-        }
-    }
-})
+  },
+  build: {
+    target: "esnext",
+    cssCodeSplit: false,
+    rollupOptions: {
+      output: {
+        format: "umd",
+        name: "subAppVue",
+        globals: {
+          vue: "Vue",
+          "vue-router": "VueRouter",
+          "element-plus": "ElementPlus",
+        },
+        entryFileNames: "index.js",
+      },
+    },
+  },
+  define: {
+    global: "window",
+  },
+});

@@ -8,7 +8,7 @@
           :default-active="currentRoute"
           mode="horizontal"
           class="main-nav"
-          @select="handleMenuSelect"
+          router
         >
           <el-sub-menu
             v-for="group in menuData"
@@ -45,46 +45,14 @@
     </el-header>
 
     <el-main class="content">
-      <div id="micro-content">
-        <micro-app
-          v-if="currentRoute === '/react'"
-          name="react-app"
-          url="http://localhost:7101"
-          baseroute="/react"
-          iframe
-          ssr
-        ></micro-app>
-        <micro-app
-          v-else-if="currentRoute === '/vue'"
-          name="vue-app"
-          url="http://localhost:7102"
-          baseroute="/vue"
-          iframe
-          ssr
-        ></micro-app>
-        <micro-app
-          v-else-if="currentRoute === '/vue/orders'"
-          name="vue-orders-app"
-          url="http://localhost:7102/orders"
-          baseroute="/vue/orders"
-        ></micro-app>
-        <micro-app
-          v-else-if="currentRoute === '/vue/users'"
-          name="vue-users-app"
-          url="http://localhost:7102/users"
-          baseroute="/vue/users"
-        ></micro-app>
-        <div v-else class="welcome-content">
-          <h2>Welcome to Micro-App Framework</h2>
-          <p>Please select an application from the menu to get started.</p>
-        </div>
-      </div>
+      <router-view />
     </el-main>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, computed } from "vue";
+import { useRoute } from "vue-router";
 
 interface MenuItem {
   title: string;
@@ -97,7 +65,7 @@ interface MenuGroup {
   children: MenuItem[];
 }
 
-const currentRoute = ref<string>("");
+const route = useRoute();
 
 const menuData = ref<MenuGroup[]>([
   {
@@ -111,7 +79,7 @@ const menuData = ref<MenuGroup[]>([
         title: "订单管理",
         moduleUrl: "/vue",
         children: [
-          { title: "订单列表", moduleUrl: "/vue" },
+          { title: "订单列表", moduleUrl: "/vue/orders" },
           { title: "用户管理", moduleUrl: "/vue/users" },
         ],
       },
@@ -140,29 +108,7 @@ const menuData = ref<MenuGroup[]>([
   },
 ]);
 
-const handleMenuSelect = (index: string) => {
-  if (index.startsWith("http")) {
-    // External links
-    window.open(index, "_blank");
-  } else {
-    // Internal micro-app routes
-    currentRoute.value = index;
-    history.replaceState({ page: window.location.pathname }, "", index);
-  }
-};
-
-onMounted(() => {
-  // Set initial route based on current URL
-  const path = window.location.pathname;
-  if (
-    path === "/react" ||
-    path === "/vue" ||
-    path === "/vue/orders" ||
-    path === "/vue/users"
-  ) {
-    currentRoute.value = path;
-  }
-});
+const currentRoute = computed(() => route.path);
 </script>
 
 <style scoped>

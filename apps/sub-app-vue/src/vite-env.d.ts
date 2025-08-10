@@ -1,9 +1,9 @@
 /// <reference types="vite/client" />
 
-declare module '*.vue' {
-  import type { DefineComponent } from 'vue'
-  const component: DefineComponent<{}, {}, any>
-  export default component
+declare module "*.vue" {
+  import type { DefineComponent } from "vue";
+  const component: DefineComponent<{}, {}, any>;
+  export default component;
 }
 
 declare global {
@@ -11,6 +11,8 @@ declare global {
     __MICRO_APP_ENVIRONMENT__?: boolean;
     __MICRO_APP_NAME__?: string;
     __MICRO_APP_BASE_ROUTE__?: string;
+    VueRouter?: any;
+    ElementPlus?: any;
   }
 }
 
