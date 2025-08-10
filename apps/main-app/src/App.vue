@@ -227,7 +227,7 @@ onMounted(() => {
 
 .content {
   flex: 1;
-  overflow: hidden;
+  overflow-y: auto;
   position: relative;
   padding: 0;
 }
