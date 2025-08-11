@@ -54,6 +54,9 @@
 import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import microApp from "@micro-zoe/micro-app";
+import { subApps } from "./config/subApps";
+import { useNavigationStore } from "./stores/navigation";
+
 interface MenuItem {
   title: string;
   name?: string;
@@ -68,25 +71,33 @@ interface MenuGroup {
 }
 
 const route = useRoute();
+const navigationStore = useNavigationStore();
+
+// 初始化导航状态
+onMounted(() => {
+  navigationStore.initializeFromStorage();
+});
 
 const menuData = ref<MenuGroup[]>([
   {
-    title: "React子应用",
-    children: [{ title: "sub-app-react", name: "react-app", path: "/" }],
+    title: subApps["react-app"].title,
+    children: [
+      { title: "sub-app-react", name: subApps["react-app"].name, path: "/" },
+    ],
   },
   {
-    title: "Vue子应用",
+    title: subApps["vue-app"].title,
     children: [
       {
         title: "订单管理",
-        name: "vue-app",
+        name: subApps["vue-app"].name,
         path: "/",
         children: [
-          { title: "订单列表", name: "vue-app", path: "/orders" },
-          { title: "用户管理", name: "vue-app", path: "/users" },
+          { title: "订单列表", name: subApps["vue-app"].name, path: "/orders" },
+          { title: "用户管理", name: subApps["vue-app"].name, path: "/users" },
         ],
       },
-      { title: "产品管理", name: "vue-app", path: "/products" },
+      { title: "产品管理", name: subApps["vue-app"].name, path: "/products" },
     ],
   },
   {
@@ -122,6 +133,10 @@ const handleMenuSelect = (index: string) => {
     const [appName, appPath] = index.split(":");
     console.log("Menu selected:", appName, appPath);
 
+    // 使用 Pinia store 设置默认页面
+    navigationStore.setDefaultPage(appPath);
+    navigationStore.setCurrentApp(appName);
+
     // 检查子应用是否已经渲染并且准备就绪
     const microAppElement = document.querySelector(
       `micro-app[name="${appName}"]`
@@ -151,14 +166,11 @@ const handleMenuSelect = (index: string) => {
 
 const router = useRouter(); // 备用导航方法
 const handleFallbackNavigation = (appName: string, appPath: string) => {
-  if (appName === "react-app") {
-    router.push("/react");
-    // 存储目标路径，等待子应用加载完成后跳转
-    sessionStorage.setItem("targetPath", appPath);
-  } else if (appName === "vue-app") {
-    router.push("/vue");
-    // 存储目标路径，等待子应用加载完成后跳转
-    sessionStorage.setItem("targetPath", appPath);
+  const appConfig = subApps[appName];
+  if (appConfig) {
+    // 使用 Pinia store 存储目标路径
+    navigationStore.setTargetPath(appPath);
+    router.push(appConfig.baseroute);
   }
 };
 
