@@ -25,12 +25,13 @@ function render(container?: Element) {
 
 // Handle micro-app lifecycle
 
-function handleAppStateChange(e) {
-  if (e.detail.appState === "afterhidden") {
+function handleAppStateChange(e: Event) {
+  const detail = (e as CustomEvent<{ appState: string }>).detail;
+  if (detail?.appState === "afterhidden") {
     console.log("已卸载");
-  } else if (e.detail.appState === "beforeshow") {
+  } else if (detail?.appState === "beforeshow") {
     console.log("即将重新渲染");
-  } else if (e.detail.appState === "aftershow") {
+  } else if (detail?.appState === "aftershow") {
     console.log("已经重新渲染");
   }
 }

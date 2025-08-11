@@ -30,6 +30,8 @@ interface Props {
   baseroute: string;
 }
 
+type MicroAppEvent = CustomEvent<{ name: string }>;
+
 // ==================== 组合式函数 ====================
 const props = defineProps<Props>();
 
@@ -66,7 +68,7 @@ const handleMounted = (e) => {
 /**
  * 处理子应用即将推入前台
  */
-const handleBeforeshow = (e) => {
+const handleBeforeshow = (e: MicroAppEvent) => {
   // 如果当前已经缓存路由信息，则需要重新push一次
   console.log("handleBeforeshow", e.detail.name);
 };
@@ -74,7 +76,7 @@ const handleBeforeshow = (e) => {
 /**
  * 处理子应用已推入前台
  */
-const handleAftershow = (e: any) => {
+const handleAftershow = (e: MicroAppEvent) => {
   console.log("handleAftershow", e);
   if (e.detail.name === props.appName) {
     // 如果当前路由信息与目标路由信息不一致，则需要重新push一次
@@ -92,7 +94,7 @@ const handleAftershow = (e: any) => {
 /**
  * 处理子应用渲染错误
  */
-const handleError = (error: any) => {
+const handleError = (error: MicroAppEvent) => {
   console.log("handleError", error);
   // 发生错误时重置准备状态
   navigationStore.setAppReady(props.appName, false);
@@ -101,7 +103,7 @@ const handleError = (error: any) => {
 /**
  * 处理子应用卸载
  */
-const handleUnmount = (e: any) => {
+const handleUnmount = (e: MicroAppEvent) => {
   console.log("handleUnmount", e);
   navigationStore.setAppReady(e.detail.name, false);
 };
