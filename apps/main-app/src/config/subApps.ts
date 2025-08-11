@@ -3,7 +3,6 @@ export interface SubAppConfig {
   url: string;
   baseroute: string;
   title: string;
-  defaultPage?: string;
 }
 
 export const subApps: Record<string, SubAppConfig> = {
@@ -12,14 +11,12 @@ export const subApps: Record<string, SubAppConfig> = {
     url: "http://localhost:7101",
     baseroute: "/react",
     title: "React子应用",
-    defaultPage: "/",
   },
   "vue-app": {
     name: "vue-app",
     url: "http://localhost:7102",
     baseroute: "/vue",
     title: "Vue子应用",
-    defaultPage: "/",
   },
 };
 

@@ -2,16 +2,12 @@
   <div class="not-found">
     <h2>404 - Page Not Found</h2>
     <p>The page you are looking for does not exist.</p>
-    <el-button type="primary" @click="$router.push('/')">
-      Go Home
-    </el-button>
+    <el-button type="primary" @click="$router.push('/')"> Go Home </el-button>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
-
-const router = useRouter()
+import { useRouter } from "vue-router";
 </script>
 
 <style scoped>

@@ -1,5 +1,6 @@
 <template>
   <div class="container">
+    <!-- 头部导航 -->
     <el-header class="header">
       <div class="header-content">
         <h1 class="logo">Micro-App Framework</h1>
@@ -44,6 +45,7 @@
       </div>
     </el-header>
 
+    <!-- 主内容区域 -->
     <el-main class="content">
       <router-view />
     </el-main>
@@ -51,12 +53,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+// ==================== 导入 ====================
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import microApp from "@micro-zoe/micro-app";
 import { subApps } from "./config/subApps";
 import { useNavigationStore } from "./stores/navigation";
 
+// ==================== 类型定义 ====================
 interface MenuItem {
   title: string;
   name?: string;
@@ -70,13 +74,13 @@ interface MenuGroup {
   children: MenuItem[];
 }
 
+// ==================== 组合式函数 ====================
 const route = useRoute();
+const router = useRouter();
 const navigationStore = useNavigationStore();
 
-// 初始化导航状态
-onMounted(() => {
-  navigationStore.initializeFromStorage();
-});
+// ==================== 响应式数据 ====================
+const currentRoute = computed(() => route.path);
 
 const menuData = ref<MenuGroup[]>([
   {
@@ -122,73 +126,84 @@ const menuData = ref<MenuGroup[]>([
   },
 ]);
 
-const currentRoute = computed(() => route.path);
-
+// ==================== 生命周期 ====================
 onMounted(() => {
   handleDirectRoute();
 });
 
+onUnmounted(() => {
+  navigationStore.setAppReady(navigationStore.currentApp, false);
+});
+
+// ==================== 方法定义 ====================
+
+/**
+ * 处理菜单选择
+ */
 const handleMenuSelect = (index: string) => {
-  if (index.includes(":")) {
-    const [appName, appPath] = index.split(":");
-    console.log("Menu selected:", appName, appPath);
+  if (!index.includes(":")) return;
 
-    // 使用 Pinia store 设置默认页面
-    navigationStore.setDefaultPage(appPath);
-    navigationStore.setCurrentApp(appName);
+  const [appName, appPath] = index.split(":");
+  console.log("Menu selected:", appName, appPath);
 
-    // 检查子应用是否已经渲染并且准备就绪
-    const microAppElement = document.querySelector(
-      `micro-app[name="${appName}"]`
-    );
+  // 设置导航状态
+  navigationStore.setDefaultPage(appPath);
+  navigationStore.setCurrentApp(appName);
 
-    if (
-      microAppElement &&
-      microAppElement.getAttribute("data-ready") === "true"
-    ) {
-      // 子应用已准备就绪，直接导航
-      try {
-        microApp.router.push({
-          name: appName,
-          path: appPath,
-        });
-      } catch (error) {
-        console.error("Navigation failed:", error);
-        // 如果导航失败，使用备用方法
-        handleFallbackNavigation(appName, appPath);
-      }
-    } else {
-      // 子应用未准备就绪，使用备用方法
+  // 检查子应用状态并导航
+  navigateToSubApp(appName, appPath);
+};
+
+/**
+ * 导航到子应用
+ */
+const navigateToSubApp = (appName: string, appPath: string) => {
+  const isAppReady = navigationStore.getAppReady(appName);
+  console.log("isAppReady", isAppReady);
+  if (isAppReady) {
+    // 子应用已准备就绪，直接导航
+    try {
+      navigationStore.setTargetPath(appPath);
+      console.log("navigateToSubApp", appName, appPath);
+      microApp.router.push({ name: appName, path: appPath });
+    } catch (error) {
+      console.error("Navigation failed:", error);
       handleFallbackNavigation(appName, appPath);
     }
+  } else {
+    // 子应用未准备就绪，使用备用方法
+    handleFallbackNavigation(appName, appPath);
   }
 };
 
-const router = useRouter(); // 备用导航方法
+/**
+ * 备用导航方法
+ */
 const handleFallbackNavigation = (appName: string, appPath: string) => {
   const appConfig = subApps[appName];
-  if (appConfig) {
-    // 使用 Pinia store 存储目标路径
-    navigationStore.setTargetPath(appPath);
-    router.push(appConfig.baseroute);
-  }
+  if (!appConfig) return;
+
+  navigationStore.setTargetPath(appPath);
+  router.push(appConfig.baseroute);
 };
 
-// 处理直接访问子应用路由的情况
+/**
+ * 处理直接访问子应用路由的情况
+ */
 const handleDirectRoute = () => {
-  // 由于现在直接通过路由跳转，这个函数可以简化或移除
-  // 子应用会自动处理路由变化
   console.log("Direct route accessed:", route.path);
 };
 </script>
 
 <style scoped>
+/* ==================== 布局样式 ==================== */
 .container {
   display: flex;
   flex-direction: column;
   height: 100vh;
 }
 
+/* ==================== 头部样式 ==================== */
 .header {
   background: #2c3e50;
   color: white;
@@ -208,11 +223,12 @@ const handleDirectRoute = () => {
 
 .logo {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 1.5.5rem;
   font-weight: 600;
   color: white;
 }
 
+/* ==================== 导航样式 ==================== */
 .main-nav {
   flex: 1;
   display: flex;
@@ -242,6 +258,7 @@ const handleDirectRoute = () => {
   color: white !important;
 }
 
+/* ==================== 内容区域样式 ==================== */
 .content {
   flex: 1;
   overflow-y: auto;
@@ -262,15 +279,5 @@ const handleDirectRoute = () => {
   height: 100%;
   text-align: center;
   color: #6c757d;
-}
-
-.welcome-content h2 {
-  margin-bottom: 1rem;
-  color: #495057;
-}
-
-micro-app {
-  height: 100%;
-  width: 100%;
 }
 </style>
