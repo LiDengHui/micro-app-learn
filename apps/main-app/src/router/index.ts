@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import type { RouteRecordRaw } from "vue-router";
 import microApp from "@micro-zoe/micro-app";
-import { subApps } from "../config/subApps";
+import { getSubAppConfigByBaseroute } from "../config/subApps";
 const routes: RouteRecordRaw[] = [
   {
     path: "/",
@@ -9,26 +9,26 @@ const routes: RouteRecordRaw[] = [
     component: () => import("../views/Home.vue"),
   },
   {
-    path: "/react",
-    name: "ReactApp",
+    path: "/:appType",
+    name: "SubApp",
     component: () => import("../views/SubApp.vue"),
-    props: () => {
+    props: (route) => {
+      const appType = route.params.appType as string;
+      const subAppConfig = getSubAppConfigByBaseroute(`/${appType}`);
+
+      if (!subAppConfig) {
+        // 如果找不到对应的子应用配置，返回默认值或重定向到首页
+        return {
+          appName: "",
+          appUrl: "",
+          baseroute: "",
+        };
+      }
+
       return {
-        appName: subApps["react-app"].name,
-        appUrl: subApps["react-app"].url,
-        baseroute: subApps["react-app"].baseroute,
-      };
-    },
-  },
-  {
-    path: "/vue",
-    name: "VueApp",
-    component: () => import("../views/SubApp.vue"),
-    props: () => {
-      return {
-        appName: subApps["vue-app"].name,
-        appUrl: subApps["vue-app"].url,
-        baseroute: subApps["vue-app"].baseroute,
+        appName: subAppConfig.name,
+        appUrl: subAppConfig.url,
+        baseroute: subAppConfig.baseroute,
       };
     },
   },

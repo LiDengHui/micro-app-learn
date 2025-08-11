@@ -1,6 +1,19 @@
 <template>
   <div id="micro-content">
+    <!-- 无效应用配置时显示错误信息 -->
+    <div v-if="!isValidApp" class="error-container">
+      <div class="error-content">
+        <el-icon class="error-icon" :size="32">
+          <Warning />
+        </el-icon>
+        <p class="error-text">无效的子应用配置</p>
+        <el-button type="primary" @click="goHome">返回首页</el-button>
+      </div>
+    </div>
+
+    <!-- 有效的子应用配置时显示 micro-app -->
     <micro-app
+      v-else
       :name="appName"
       :url="appUrl"
       :baseroute="baseroute"
@@ -23,7 +36,8 @@
 // ==================== 导入 ====================
 import microApp from "@micro-zoe/micro-app";
 import { useNavigationStore } from "../stores/navigation";
-import { onUnmounted } from "vue";
+import { onUnmounted, computed } from "vue";
+import { Warning } from "@element-plus/icons-vue";
 // ==================== 类型定义 ====================
 interface Props {
   appName: string;
@@ -35,6 +49,16 @@ interface Props {
 const props = defineProps<Props>();
 
 const navigationStore = useNavigationStore();
+
+// 计算属性：检查应用配置是否有效
+const isValidApp = computed(() => {
+  return props.appName && props.appUrl && props.baseroute;
+});
+
+// 返回首页方法
+const goHome = () => {
+  window.location.href = "/";
+};
 
 // ==================== 方法定义 ====================
 
@@ -118,6 +142,36 @@ onUnmounted(() => {
 micro-app {
   height: 100%;
   width: 100%;
+}
+
+/* ==================== 错误状态样式 ==================== */
+.error-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.error-content {
+  text-align: center;
+  color: #606266;
+}
+
+.error-icon {
+  color: #f56c6c;
+  margin-bottom: 16px;
+}
+
+.error-text {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  color: #606266;
 }
 
 /* ==================== 加载状态样式 ==================== */
