@@ -16,6 +16,7 @@ export default defineConfig({
     target: "esnext",
     cssCodeSplit: false,
     rollupOptions: {
+      external: ["vue", "vue-router", "element-plus"],
       output: {
         format: "umd",
         name: "subAppVue",

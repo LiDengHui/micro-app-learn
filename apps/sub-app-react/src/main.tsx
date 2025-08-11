@@ -1,8 +1,9 @@
 import "./public-path";
 import React, { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { RouterProvider } from "react-router-dom";
 import "./index.css";
-import App from "./App.tsx";
+import router from "./router";
 
 // Make React and ReactDOM available globally for micro-app
 if (typeof window !== "undefined") {
@@ -19,7 +20,7 @@ function render(props: any = {}) {
   if (rootElement) {
     createRoot(rootElement).render(
       <StrictMode>
-        <App />
+        <RouterProvider router={router} />
       </StrictMode>
     );
   }

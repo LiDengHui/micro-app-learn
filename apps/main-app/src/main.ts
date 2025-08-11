@@ -7,11 +7,10 @@ import "./style.scss";
 import microApp from "@micro-zoe/micro-app";
 
 // Initialize micro-app
-microApp.start({
-  "router-mode": "history",
-});
+microApp.start({});
 
 // Expose shared libraries to sub-apps
+(window as any).Vue = { createApp };
 (window as any).VueRouter = router;
 (window as any).ElementPlus = ElementPlus;
 

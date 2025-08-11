@@ -8,7 +8,7 @@
           :default-active="currentRoute"
           mode="horizontal"
           class="main-nav"
-          router
+          @select="handleMenuSelect"
         >
           <el-sub-menu
             v-for="group in menuData"
@@ -22,7 +22,7 @@
             <template v-for="item in group.children" :key="item.title">
               <el-menu-item
                 v-if="!item.children || item.children.length === 0"
-                :index="item.moduleUrl"
+                :index="item.name + ':' + item.path"
               >
                 {{ item.title }}
               </el-menu-item>
@@ -33,7 +33,7 @@
                 <el-menu-item
                   v-for="subItem in item.children"
                   :key="subItem.title"
-                  :index="subItem.moduleUrl"
+                  :index="subItem.name + ':' + subItem.path"
                 >
                   {{ subItem.title }}
                 </el-menu-item>
@@ -51,12 +51,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
-import { useRoute } from "vue-router";
-
+import { ref, computed, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import microApp from "@micro-zoe/micro-app";
 interface MenuItem {
   title: string;
-  moduleUrl: string;
+  name?: string;
+  path?: string;
+  moduleUrl?: string;
   children?: MenuItem[];
 }
 
@@ -70,20 +72,21 @@ const route = useRoute();
 const menuData = ref<MenuGroup[]>([
   {
     title: "React子应用",
-    children: [{ title: "sub-app-react", moduleUrl: "/react" }],
+    children: [{ title: "sub-app-react", name: "react-app", path: "/" }],
   },
   {
     title: "Vue子应用",
     children: [
       {
         title: "订单管理",
-        moduleUrl: "/vue",
+        name: "vue-app",
+        path: "/",
         children: [
-          { title: "订单列表", moduleUrl: "/vue/orders" },
-          { title: "用户管理", moduleUrl: "/vue/users" },
+          { title: "订单列表", name: "vue-app", path: "/orders" },
+          { title: "用户管理", name: "vue-app", path: "/users" },
         ],
       },
-      { title: "产品管理", moduleUrl: "/vue/products" },
+      { title: "产品管理", name: "vue-app", path: "/products" },
     ],
   },
   {
@@ -109,6 +112,62 @@ const menuData = ref<MenuGroup[]>([
 ]);
 
 const currentRoute = computed(() => route.path);
+
+onMounted(() => {
+  handleDirectRoute();
+});
+
+const handleMenuSelect = (index: string) => {
+  if (index.includes(":")) {
+    const [appName, appPath] = index.split(":");
+    console.log("Menu selected:", appName, appPath);
+
+    // 检查子应用是否已经渲染并且准备就绪
+    const microAppElement = document.querySelector(
+      `micro-app[name="${appName}"]`
+    );
+
+    if (
+      microAppElement &&
+      microAppElement.getAttribute("data-ready") === "true"
+    ) {
+      // 子应用已准备就绪，直接导航
+      try {
+        microApp.router.push({
+          name: appName,
+          path: appPath,
+        });
+      } catch (error) {
+        console.error("Navigation failed:", error);
+        // 如果导航失败，使用备用方法
+        handleFallbackNavigation(appName, appPath);
+      }
+    } else {
+      // 子应用未准备就绪，使用备用方法
+      handleFallbackNavigation(appName, appPath);
+    }
+  }
+};
+
+const router = useRouter(); // 备用导航方法
+const handleFallbackNavigation = (appName: string, appPath: string) => {
+  if (appName === "react-app") {
+    router.push("/react");
+    // 存储目标路径，等待子应用加载完成后跳转
+    sessionStorage.setItem("targetPath", appPath);
+  } else if (appName === "vue-app") {
+    router.push("/vue");
+    // 存储目标路径，等待子应用加载完成后跳转
+    sessionStorage.setItem("targetPath", appPath);
+  }
+};
+
+// 处理直接访问子应用路由的情况
+const handleDirectRoute = () => {
+  // 由于现在直接通过路由跳转，这个函数可以简化或移除
+  // 子应用会自动处理路由变化
+  console.log("Direct route accessed:", route.path);
+};
 </script>
 
 <style scoped>
