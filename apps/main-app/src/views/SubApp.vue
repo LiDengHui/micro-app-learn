@@ -1,29 +1,16 @@
 <template>
   <div id="micro-content">
-    <!-- 无效应用配置时显示错误信息 -->
-    <div v-if="!isValidApp" class="error-container">
-      <div class="error-content">
-        <el-icon class="error-icon" :size="32">
-          <Warning />
-        </el-icon>
-        <p class="error-text">无效的子应用配置</p>
-        <el-button type="primary" @click="goHome">返回首页</el-button>
-      </div>
-    </div>
-
-    <!-- 有效的子应用配置时显示 micro-app -->
     <micro-app
-      v-else
       :name="appName"
       :url="appUrl"
       :baseroute="baseroute"
       :default-page="navigationStore.targetPath"
       iframe
       ssr
+      keep-alive
       @created="handleCreated"
       @beforemount="handleBeforemount"
       @mounted="handleMounted"
-      @afterhidden="handleAfterhidden"
       @beforeshow="handleBeforeshow"
       @aftershow="handleAftershow"
       @error="handleError"
@@ -36,8 +23,6 @@
 // ==================== 导入 ====================
 import microApp from "@micro-zoe/micro-app";
 import { useNavigationStore } from "../stores/navigation";
-import { onUnmounted, computed } from "vue";
-import { Warning } from "@element-plus/icons-vue";
 // ==================== 类型定义 ====================
 interface Props {
   appName: string;
@@ -49,16 +34,6 @@ interface Props {
 const props = defineProps<Props>();
 
 const navigationStore = useNavigationStore();
-
-// 计算属性：检查应用配置是否有效
-const isValidApp = computed(() => {
-  return props.appName && props.appUrl && props.baseroute;
-});
-
-// 返回首页方法
-const goHome = () => {
-  window.location.href = "/";
-};
 
 // ==================== 方法定义 ====================
 
@@ -79,33 +54,39 @@ const handleBeforemount = () => {
 /**
  * 处理子应用挂载完成
  */
-const handleMounted = () => {
+const handleMounted = (e) => {
   console.log("handleMounted");
-  // 子应用挂载完成，设置准备就绪状态
-  navigationStore.setAppName(props.appName);
-  navigationStore.setAppUrl(props.appUrl);
-  navigationStore.setAppReady(props.appName, true);
+  navigationStore.setAppReady(e.detail.name, true);
 };
 
 /**
  * 处理子应用推入后台
  */
-const handleAfterhidden = () => {
-  console.log("handleAfterhidden");
-};
 
 /**
  * 处理子应用即将推入前台
  */
-const handleBeforeshow = () => {
-  console.log("handleBeforeshow");
+const handleBeforeshow = (e) => {
+  // 如果当前已经缓存路由信息，则需要重新push一次
+  console.log("handleBeforeshow", e.detail.name);
 };
 
 /**
  * 处理子应用已推入前台
  */
-const handleAftershow = () => {
-  console.log("handleAftershow");
+const handleAftershow = (e: any) => {
+  console.log("handleAftershow", e);
+  if (e.detail.name === props.appName) {
+    // 如果当前路由信息与目标路由信息不一致，则需要重新push一次
+    const routeInfo = microApp.router.current.get(props.appName);
+    if (routeInfo?.pathname !== navigationStore.targetPath) {
+      microApp.router.push({
+        name: props.appName,
+        path: navigationStore.targetPath!,
+      });
+    }
+  }
+  navigationStore.setAppReady(e.detail.name, true);
 };
 
 /**
@@ -120,15 +101,10 @@ const handleError = (error: any) => {
 /**
  * 处理子应用卸载
  */
-const handleUnmount = () => {
-  console.log("handleUnmount", props.appName, false);
-  navigationStore.setAppReady(props.appName, false);
+const handleUnmount = (e: any) => {
+  console.log("handleUnmount", e);
+  navigationStore.setAppReady(e.detail.name, false);
 };
-
-onUnmounted(() => {
-  console.log("onUnmounted", props.appName, false);
-  navigationStore.setAppReady(props.appName, false);
-});
 </script>
 
 <style scoped>

@@ -54,7 +54,7 @@
 
 <script setup lang="ts">
 // ==================== 导入 ====================
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import microApp from "@micro-zoe/micro-app";
 import { subApps } from "./config/subApps";
@@ -129,10 +129,6 @@ const menuData = ref<MenuGroup[]>([
 // ==================== 生命周期 ====================
 onMounted(() => {
   handleDirectRoute();
-});
-
-onUnmounted(() => {
-  navigationStore.setAppReady(navigationStore.currentApp, false);
 });
 
 // ==================== 方法定义 ====================

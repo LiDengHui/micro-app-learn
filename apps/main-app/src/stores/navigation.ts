@@ -1,12 +1,12 @@
 import { defineStore } from "pinia";
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 
 export const useNavigationStore = defineStore("navigation", () => {
   // ==================== 状态定义 ====================
   const defaultPage = ref<string | null>(null);
   const targetPath = ref<string | null>(null);
   const currentApp = ref<string | null>(null);
-  const readyAppName = ref<string | null>(null);
+  const readyAppMap = ref<Record<string, boolean>>({});
   const appName = ref<string | null>(null);
   const appUrl = ref<string | null>(null);
 
@@ -84,25 +84,21 @@ export const useNavigationStore = defineStore("navigation", () => {
    * 设置应用准备状态
    */
   const setAppReady = (appName: string, ready: boolean) => {
-    if (ready) {
-      // 设置为 ready 状态，同时清除其他应用的 ready 状态
-      readyAppName.value = appName;
-    } else {
-      // 清除 ready 状态
-      if (readyAppName.value === appName) {
-        readyAppName.value = null;
+    // 遍历readyAppMap，如果readyAppMap[appName]为true，则设置为false
+    for (const key in readyAppMap.value) {
+      if (readyAppMap.value[key]) {
+        readyAppMap.value[key] = false;
       }
     }
+    readyAppMap.value[appName] = ready;
   };
 
   /**
    * 获取应用准备状态
    */
   const getAppReady = (appName: string): boolean => {
-    return readyAppName.value === appName;
+    return readyAppMap.value[appName] || false;
   };
-
-  // ==================== 清理方法 ====================
 
   /**
    * 清除默认页面
@@ -125,7 +121,7 @@ export const useNavigationStore = defineStore("navigation", () => {
     clearDefaultPage();
     clearTargetPath();
     currentApp.value = null;
-    readyAppName.value = null;
+    readyAppMap.value = {};
     appName.value = null;
     appUrl.value = null;
   };
@@ -142,7 +138,7 @@ export const useNavigationStore = defineStore("navigation", () => {
     defaultPage,
     targetPath,
     currentApp,
-    readyAppName,
+    readyAppMap,
     appName,
     appUrl,
 

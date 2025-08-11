@@ -24,9 +24,26 @@ function render(container?: Element) {
 }
 
 // Handle micro-app lifecycle
-window.addEventListener("unmount", () => {
+
+function handleAppStateChange(e) {
+  if (e.detail.appState === "afterhidden") {
+    console.log("已卸载");
+  } else if (e.detail.appState === "beforeshow") {
+    console.log("即将重新渲染");
+  } else if (e.detail.appState === "aftershow") {
+    console.log("已经重新渲染");
+  }
+}
+
+function handleUnmount() {
   console.log("Vue app unmounted");
-  // Cleanup if needed
-});
+  window.removeEventListener("appstate-change", handleAppStateChange);
+  window.removeEventListener("unmount", handleUnmount);
+}
+
+window.addEventListener("unmount", handleUnmount);
+
+// 监听keep-alive模式下的应用状态
+window.addEventListener("appstate-change", handleAppStateChange);
 // Running standalone
 render();
