@@ -2,17 +2,6 @@ import { createRouter, createWebHistory } from "vue-router";
 import type { RouteRecordRaw } from "vue-router";
 import { notifyMainAppRouteChange } from "./notifyMainApp";
 
-// 扩展Window接口以支持microApp
-declare global {
-  interface Window {
-    __MICRO_APP_ENVIRONMENT__?: boolean;
-    microApp?: {
-      dispatch: (data: any) => void;
-      addDataListener: (listener: (data: any) => void) => void;
-    };
-  }
-}
-
 const routes: RouteRecordRaw[] = [
   {
     path: "/",
