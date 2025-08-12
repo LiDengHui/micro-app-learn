@@ -6,11 +6,13 @@
           <span>用户管理</span>
           <div class="header-actions">
             <el-button type="success" @click="addUser">添加用户</el-button>
-            <el-button type="primary" @click="$router.push('/')">返回首页</el-button>
+            <el-button type="primary" @click="$router.push('/')"
+              >返回首页</el-button
+            >
           </div>
         </div>
       </template>
-      
+
       <div class="users-content">
         <el-row :gutter="20">
           <el-col :span="24">
@@ -39,15 +41,27 @@
               <el-table-column prop="createTime" label="创建时间" width="180" />
               <el-table-column label="操作" width="200">
                 <template #default="scope">
-                  <el-button size="small" @click="viewUser(scope.row)">查看</el-button>
-                  <el-button size="small" type="primary" @click="editUser(scope.row)">编辑</el-button>
-                  <el-button size="small" type="danger" @click="deleteUser(scope.row)">删除</el-button>
+                  <el-button size="small" @click="viewUser(scope.row)"
+                    >查看</el-button
+                  >
+                  <el-button
+                    size="small"
+                    type="primary"
+                    @click="editUser(scope.row)"
+                    >编辑</el-button
+                  >
+                  <el-button
+                    size="small"
+                    type="danger"
+                    @click="deleteUser(scope.row)"
+                    >删除</el-button
+                  >
                 </template>
               </el-table-column>
             </el-table>
           </el-col>
         </el-row>
-        
+
         <div class="pagination-wrapper">
           <el-pagination
             v-model:current-page="currentPage"
@@ -65,81 +79,123 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted } from "vue";
 
 interface User {
-  id: string
-  name: string
-  email: string
-  phone: string
-  role: string
-  status: string
-  createTime: string
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: string;
+  status: string;
+  createTime: string;
 }
 
-const users = ref<User[]>([])
-const currentPage = ref(1)
-const pageSize = ref(10)
-const total = ref(0)
+const users = ref<User[]>([]);
+const currentPage = ref(1);
+const pageSize = ref(10);
+const total = ref(0);
 
 const mockUsers: User[] = [
-  { id: 'U001', name: '张三', email: 'zhangsan@example.com', phone: '13800138001', role: '管理员', status: 'active', createTime: '2024-01-01' },
-  { id: 'U002', name: '李四', email: 'lisi@example.com', phone: '13800138002', role: '用户', status: 'active', createTime: '2024-01-02' },
-  { id: 'U003', name: '王五', email: 'wangwu@example.com', phone: '13800138003', role: '编辑', status: 'inactive', createTime: '2024-01-03' },
-  { id: 'U004', name: '赵六', email: 'zhaoliu@example.com', phone: '13800138004', role: '用户', status: 'active', createTime: '2024-01-04' },
-  { id: 'U005', name: '钱七', email: 'qianqi@example.com', phone: '13800138005', role: '管理员', status: 'active', createTime: '2024-01-05' },
-]
+  {
+    id: "U001",
+    name: "张三",
+    email: "zhangsan@example.com",
+    phone: "13800138001",
+    role: "管理员",
+    status: "active",
+    createTime: "2024-01-01",
+  },
+  {
+    id: "U002",
+    name: "李四",
+    email: "lisi@example.com",
+    phone: "13800138002",
+    role: "用户",
+    status: "active",
+    createTime: "2024-01-02",
+  },
+  {
+    id: "U003",
+    name: "王五",
+    email: "wangwu@example.com",
+    phone: "13800138003",
+    role: "编辑",
+    status: "inactive",
+    createTime: "2024-01-03",
+  },
+  {
+    id: "U004",
+    name: "赵六",
+    email: "zhaoliu@example.com",
+    phone: "13800138004",
+    role: "用户",
+    status: "active",
+    createTime: "2024-01-04",
+  },
+  {
+    id: "U005",
+    name: "钱七",
+    email: "qianqi@example.com",
+    phone: "13800138005",
+    role: "管理员",
+    status: "active",
+    createTime: "2024-01-05",
+  },
+];
 
 const getRoleType = (role: string) => {
   switch (role) {
-    case '管理员': return 'danger'
-    case '编辑': return 'warning'
-    case '用户': return 'success'
-    default: return 'info'
+    case "管理员":
+      return "danger";
+    case "编辑":
+      return "warning";
+    case "用户":
+      return "success";
+    default:
+      return "info";
   }
-}
+};
 
 const addUser = () => {
-  console.log('添加用户')
-}
+  console.log("添加用户");
+};
 
 const viewUser = (user: User) => {
-  console.log('查看用户:', user)
-}
+  console.log("查看用户:", user);
+};
 
 const editUser = (user: User) => {
-  console.log('编辑用户:', user)
-}
+  console.log("编辑用户:", user);
+};
 
 const deleteUser = (user: User) => {
-  console.log('删除用户:', user)
-}
+  console.log("删除用户:", user);
+};
 
 const handleStatusChange = (user: User) => {
-  console.log('用户状态变更:', user)
-}
+  console.log("用户状态变更:", user);
+};
 
 const handleSizeChange = (val: number) => {
-  pageSize.value = val
+  pageSize.value = val;
   // 这里可以重新加载数据
-}
+};
 
 const handleCurrentChange = (val: number) => {
-  currentPage.value = val
+  currentPage.value = val;
   // 这里可以重新加载数据
-}
+};
 
 onMounted(() => {
-  users.value = mockUsers
-  total.value = mockUsers.length
-})
+  users.value = mockUsers;
+  total.value = mockUsers.length;
+});
 </script>
 
 <style scoped>
 .users-page {
-  padding: 20px;
   background: #f5f5f5;
-  min-height: 100vh;
 }
 
 .page-header {

@@ -56,12 +56,25 @@ body {
 .content {
   flex: 1;
   background: #f9f9f9;
-  padding: 16px;
-  overflow: auto;
+  padding: 0;
+  overflow: hidden;
+  position: relative;
 
   iframe {
     width: 100%;
     height: 100%;
     border: none;
+  }
+
+  #micro-content {
+    width: 100%;
+    height: 100%;
+    position: relative;
+  }
+
+  micro-app {
+    width: 100%;
+    height: 100%;
+    display: block;
   }
 }

@@ -8,8 +8,4 @@
 // Vue 子应用主组件
 </script>
 
-<style scoped>
-.vue-sub-app {
-  min-height: 100vh;
-}
-</style>
+<style scoped></style>
