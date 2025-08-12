@@ -86,7 +86,24 @@ const menuData = ref<MenuGroup[]>([
   {
     title: subApps["react-app"].title,
     children: [
-      { title: "sub-app-react", name: subApps["react-app"].name, path: "/" },
+      {
+        title: "订单管理",
+        name: subApps["react-app"].name,
+        path: "/",
+        children: [
+          {
+            title: "订单列表",
+            name: subApps["react-app"].name,
+            path: "/orders",
+          },
+          {
+            title: "用户管理",
+            name: subApps["react-app"].name,
+            path: "/users",
+          },
+        ],
+      },
+      { title: "产品管理", name: subApps["react-app"].name, path: "/products" },
     ],
   },
   {

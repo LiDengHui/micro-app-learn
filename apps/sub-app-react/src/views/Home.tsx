@@ -17,13 +17,13 @@ const Home: React.FC = () => {
           }}
         >
           <h1>React 子应用 - 首页</h1>
-          <p>这是一个使用 React Router Hash 模式的应用</p>
+          <p>这是一个使用 React Router 的微前端子应用</p>
 
           <div style={{ marginTop: "30px" }}>
             <h3>页面导航</h3>
             <div style={{ display: "flex", gap: "10px", marginTop: "15px" }}>
               <button
-                onClick={() => navigate("/orders")}
+                onClick={() => navigate("orders")}
                 style={{
                   padding: "10px 20px",
                   background: "#007bff",
@@ -33,10 +33,10 @@ const Home: React.FC = () => {
                   cursor: "pointer",
                 }}
               >
-                订单管理
+                订单列表
               </button>
               <button
-                onClick={() => navigate("/users")}
+                onClick={() => navigate("users")}
                 style={{
                   padding: "10px 20px",
                   background: "#28a745",
