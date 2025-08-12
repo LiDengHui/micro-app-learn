@@ -4,6 +4,7 @@ import App from "./App.vue";
 import router from "./router";
 import ElementPlus from "element-plus";
 import "element-plus/dist/index.css";
+import * as ElementPlusIconsVue from "@element-plus/icons-vue";
 
 function render(container?: Element) {
   const mountElement = container
@@ -15,6 +16,11 @@ function render(container?: Element) {
 
     // Use shared libraries from main app if available
     app.use(ElementPlus);
+
+    // 注册所有图标
+    for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+      app.component(key, component);
+    }
 
     // Use local router for sub-app
     app.use(router);

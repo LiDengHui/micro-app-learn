@@ -62,6 +62,11 @@ export function buildMenuData(): MenuGroup[] {
             },
           ],
         },
+        {
+          title: "用户管理系统",
+          name: subApps["vue-app"].name,
+          path: "/user-management",
+        },
         { title: "产品管理", name: subApps["vue-app"].name, path: "/products" },
       ],
     },

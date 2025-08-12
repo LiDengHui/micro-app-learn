@@ -11,6 +11,7 @@ const routeMenuMap: Record<string, { title: string; path: string }> = {
   "/": { title: "订单管理", path: "/" },
   "/orders": { title: "订单列表", path: "/orders" },
   "/users": { title: "用户管理", path: "/users" },
+  "/user-management": { title: "用户管理系统", path: "/user-management" },
   "/products": { title: "产品管理", path: "/products" },
 };
 
@@ -31,5 +32,3 @@ export function notifyMainAppRouteChange(path: string) {
     console.error("通知主应用路由变化失败:", error);
   }
 }
-
-

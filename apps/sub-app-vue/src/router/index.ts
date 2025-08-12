@@ -18,6 +18,11 @@ const routes: RouteRecordRaw[] = [
     name: "Users",
     component: () => import("../views/Users.vue"),
   },
+  {
+    path: "/user-management",
+    name: "UserManagement",
+    component: () => import("../views/UserManagement.vue"),
+  },
 ];
 
 const router = createRouter({

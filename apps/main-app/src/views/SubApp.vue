@@ -22,6 +22,8 @@
 
 <script setup lang="ts">
 // ==================== 导入 ====================
+import { getCurrentInstance } from "vue";
+import { useRouter } from "vue-router";
 import microApp from "@micro-zoe/micro-app";
 import { useNavigationStore } from "../stores/navigation";
 import eventBus from "../utils/eventBus";
@@ -57,7 +59,7 @@ interface MenuUpdateEvent {
 
 // ==================== 组合式函数 ====================
 const props = defineProps<Props>();
-
+const router = useRouter();
 const navigationStore = useNavigationStore();
 
 // ==================== 方法定义 ====================
@@ -75,8 +77,14 @@ const handleCreated = () => {
 const handleBeforemount = () => {
   console.log("handleBeforemount");
 
-  // 使用props中的appName设置监听器
-  microApp.addDataListener(props.appName, handleRouteChange);
+  // 设置数据监听器，监听多种事件类型
+  microApp.addDataListener(props.appName, (data: any) => {
+    if (data.name === "route-change") {
+      handleRouteChange(data);
+    } else if (data.name === "navigate-to-main") {
+      handleNavigateToMain(data);
+    }
+  });
   console.log(`已设置子应用 ${props.appName} 数据监听器`);
 };
 
@@ -169,6 +177,16 @@ const handleRouteChange = (data: RouteChangeEvent) => {
     eventBus.emit(MENU_UPDATE, menuUpdateData);
     console.log("已通过eventBus上报menu-update事件:", menuUpdateData);
   }
+};
+
+/**
+ * 处理导航到主应用事件
+ */
+const handleNavigateToMain = (data: any) => {
+  console.log("子应用请求导航到主应用:", data);
+
+  // 跳转到主应用首页
+  router.push(data.data?.path || "/");
 };
 </script>
 

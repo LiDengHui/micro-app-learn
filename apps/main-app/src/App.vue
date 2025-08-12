@@ -1,7 +1,14 @@
 <template>
-  <div class="container">
-    <!-- 头部导航 -->
-    <el-header class="header">
+  <div class="container" :class="{ 'login-layout': isLoginPage }">
+    <!-- 加载状态 -->
+    <div v-if="!isInitialized" class="loading-screen">
+      <div class="loading-spinner">
+        <el-icon class="is-loading"><Loading /></el-icon>
+      </div>
+    </div>
+
+    <!-- 头部导航 - 仅在非登录页显示 -->
+    <el-header v-else-if="!isLoginPage" class="header">
       <div class="header-content">
         <h1 class="logo">Micro-App Framework</h1>
 
@@ -43,11 +50,34 @@
             </template>
           </el-sub-menu>
         </el-menu>
+
+        <!-- 用户信息区域 -->
+        <div class="user-info">
+          <el-dropdown @command="handleUserCommand">
+            <span class="user-name">
+              <el-icon><User /></el-icon>
+              {{ authStore.currentUser?.username || "用户" }}
+              <el-icon><ArrowDown /></el-icon>
+            </span>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item command="profile">个人资料</el-dropdown-item>
+                <el-dropdown-item command="logout" divided
+                  >退出登录</el-dropdown-item
+                >
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+        </div>
       </div>
     </el-header>
 
     <!-- 主内容区域 -->
-    <el-main class="content">
+    <el-main
+      v-if="isInitialized"
+      class="content"
+      :class="{ 'login-content': isLoginPage }"
+    >
       <router-view />
     </el-main>
   </div>
@@ -57,10 +87,12 @@
 // ==================== 导入 ====================
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { User, ArrowDown, Loading } from "@element-plus/icons-vue";
 import microApp from "@micro-zoe/micro-app";
 import { subApps } from "./config/subApps";
 import { buildMenuData, type MenuGroup } from "./config/menu";
 import { useNavigationStore } from "./stores/navigation";
+import { useAuthStore } from "./stores/auth";
 import eventBus from "./utils/eventBus";
 import { MENU_UPDATE } from "./constants/events";
 
@@ -87,11 +119,13 @@ interface MenuUpdateEvent {
 const route = useRoute();
 const router = useRouter();
 const navigationStore = useNavigationStore();
+const authStore = useAuthStore();
 
 // ==================== 响应式数据 ====================
 const currentRoute = computed(() => route.path);
 const mainMenuRef = ref<any>(null);
 const activeMenuIndex = ref<string>("");
+const isInitialized = ref(false);
 
 // ==================== 计算属性 ====================
 const menuActiveIndex = computed(() => {
@@ -99,12 +133,24 @@ const menuActiveIndex = computed(() => {
   return activeMenuIndex.value || currentRoute.value;
 });
 
+const isLoginPage = computed(() => {
+  // 初始化完成前，如果没有认证状态，则认为是登录页
+  if (!isInitialized.value) {
+    return !authStore.isAuthenticated;
+  }
+  return route.name === "Login";
+});
+
 const menuData = ref<MenuGroup[]>(buildMenuData());
 
 // ==================== 生命周期 ====================
-onMounted(() => {
+onMounted(async () => {
+  // 初始化认证状态
+  await initializeAuth();
   handleDirectRoute();
   setupEventBusListener();
+  // 标记初始化完成
+  isInitialized.value = true;
 });
 
 onUnmounted(() => {
@@ -112,6 +158,17 @@ onUnmounted(() => {
 });
 
 // ==================== 方法定义 ====================
+
+/**
+ * 初始化认证状态
+ */
+const initializeAuth = async () => {
+  try {
+    await authStore.initAuth();
+  } catch (error) {
+    console.error("初始化认证状态失败:", error);
+  }
+};
 
 /**
  * 处理菜单选择
@@ -124,6 +181,12 @@ const handleMenuSelect = (index: string) => {
 
   // 更新菜单激活状态
   activeMenuIndex.value = index;
+
+  // 如果是子应用路径，直接跳转
+  if (appPath.startsWith("/sub-app/")) {
+    router.push(appPath);
+    return;
+  }
 
   // 设置导航状态
   navigationStore.setDefaultPage(appPath);
@@ -307,6 +370,25 @@ const findMenuIndexByInfo = (
   console.log("未找到匹配的菜单项");
   return null;
 };
+
+/**
+ * 处理用户操作命令
+ */
+const handleUserCommand = async (command: string) => {
+  switch (command) {
+    case "profile":
+      // TODO: 打开个人资料页面
+      console.log("打开个人资料");
+      break;
+    case "logout":
+      await authStore.logout();
+      // 登出后跳转到登录页
+      router.push({ name: "Login" });
+      break;
+    default:
+      break;
+  }
+};
 </script>
 
 <style scoped>
@@ -315,6 +397,62 @@ const findMenuIndexByInfo = (
   display: flex;
   flex-direction: column;
   height: 100vh;
+}
+
+.container.login-layout {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+}
+
+.container.login-layout::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+      circle at 20% 50%,
+      rgba(120, 119, 198, 0.3) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 20%,
+      rgba(255, 119, 198, 0.3) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 40% 80%,
+      rgba(120, 219, 255, 0.3) 0%,
+      transparent 50%
+    );
+  pointer-events: none;
+}
+
+/* ==================== 加载屏幕样式 ==================== */
+.loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  z-index: 9999;
+}
+
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: white;
+}
+
+.loading-spinner .el-icon {
+  font-size: 40px;
+  margin-bottom: 16px;
 }
 
 /* ==================== 头部样式 ==================== */
@@ -333,6 +471,7 @@ const findMenuIndexByInfo = (
   justify-content: space-between;
   padding: 0 2rem;
   height: 60px;
+  gap: 1rem;
 }
 
 .logo {
@@ -372,11 +511,38 @@ const findMenuIndexByInfo = (
   color: white !important;
 }
 
+/* ==================== 用户信息样式 ==================== */
+.user-info {
+  flex-shrink: 0;
+}
+
+.user-name {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: white;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.user-name:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
 /* ==================== 内容区域样式 ==================== */
 .content {
   flex: 1;
   overflow-y: auto;
   position: relative;
+  padding: 0;
+}
+
+.content.login-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 0;
 }
 
