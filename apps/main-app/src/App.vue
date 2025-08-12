@@ -6,7 +6,8 @@
         <h1 class="logo">Micro-App Framework</h1>
 
         <el-menu
-          :default-active="currentRoute"
+          ref="mainMenuRef"
+          :default-active="menuActiveIndex"
           mode="horizontal"
           class="main-nav"
           @select="handleMenuSelect"
@@ -54,11 +55,21 @@
 
 <script setup lang="ts">
 // ==================== 导入 ====================
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import microApp from "@micro-zoe/micro-app";
 import { subApps } from "./config/subApps";
 import { useNavigationStore } from "./stores/navigation";
+import eventBus from "./utils/eventBus";
+
+// 扩展Window接口以支持microApp
+declare global {
+  interface Window {
+    microApp?: {
+      addDataListener: (listener: (data: any) => void) => void;
+    };
+  }
+}
 
 // ==================== 类型定义 ====================
 interface MenuItem {
@@ -74,6 +85,25 @@ interface MenuGroup {
   children: MenuItem[];
 }
 
+// 子应用路由变化数据类型
+interface RouteChangeData {
+  name: string;
+  data: {
+    appName: string;
+    path: string;
+    menuTitle: string;
+    menuPath: string;
+  };
+}
+
+// 菜单更新事件类型
+interface MenuUpdateEvent {
+  appName: string;
+  path: string;
+  menuTitle: string;
+  menuPath: string;
+}
+
 // ==================== 组合式函数 ====================
 const route = useRoute();
 const router = useRouter();
@@ -81,6 +111,14 @@ const navigationStore = useNavigationStore();
 
 // ==================== 响应式数据 ====================
 const currentRoute = computed(() => route.path);
+const mainMenuRef = ref<any>(null);
+const activeMenuIndex = ref<string>("");
+
+// ==================== 计算属性 ====================
+const menuActiveIndex = computed(() => {
+  // 优先使用子应用上报的菜单索引，否则使用当前路由
+  return activeMenuIndex.value || currentRoute.value;
+});
 
 const menuData = ref<MenuGroup[]>([
   {
@@ -146,6 +184,11 @@ const menuData = ref<MenuGroup[]>([
 // ==================== 生命周期 ====================
 onMounted(() => {
   handleDirectRoute();
+  setupEventBusListener();
+});
+
+onUnmounted(() => {
+  removeEventBusListener();
 });
 
 // ==================== 方法定义 ====================
@@ -158,6 +201,9 @@ const handleMenuSelect = (index: string) => {
 
   const [appName, appPath] = index.split(":");
   console.log("Menu selected:", appName, appPath);
+
+  // 更新菜单激活状态
+  activeMenuIndex.value = index;
 
   // 设置导航状态
   navigationStore.setDefaultPage(appPath);
@@ -205,6 +251,141 @@ const handleFallbackNavigation = (appName: string, appPath: string) => {
  */
 const handleDirectRoute = () => {
   console.log("Direct route accessed:", route.path);
+};
+
+/**
+ * 更新当前菜单状态
+ */
+const updateCurrentMenu = (
+  appName: string,
+  menuTitle: string,
+  menuPath: string
+) => {
+  console.log("更新菜单状态:", { appName, menuTitle, menuPath });
+
+  try {
+    // 根据子应用上报的信息查找对应的菜单项
+    const menuIndex = findMenuIndexByInfo(appName, menuTitle, menuPath);
+
+    if (menuIndex) {
+      // 更新响应式数据
+      activeMenuIndex.value = menuIndex;
+
+      // 如果菜单组件已初始化，使用 updateActiveIndex 方法更新菜单选中项
+      if (mainMenuRef.value) {
+        mainMenuRef.value.updateActiveIndex(menuIndex);
+        console.log("已更新菜单选中项:", menuIndex);
+      } else {
+        console.log("菜单组件未初始化，已更新响应式数据:", menuIndex);
+      }
+    } else {
+      console.warn("未找到对应的菜单项:", { appName, menuTitle, menuPath });
+    }
+  } catch (error) {
+    console.error("更新菜单状态失败:", error);
+  }
+};
+
+/**
+ * 处理菜单更新事件
+ */
+const handleMenuUpdate = (menuData: MenuUpdateEvent) => {
+  console.log("主应用收到menu-update事件:", menuData);
+
+  const { appName, path, menuTitle, menuPath } = menuData;
+
+  // 更新当前菜单状态
+  updateCurrentMenu(appName, menuTitle, menuPath);
+
+  // 更新导航状态
+  navigationStore.setTargetPath(path);
+  navigationStore.setCurrentApp(appName);
+
+  console.log("已处理menu-update事件");
+};
+
+/**
+ * 设置eventBus监听器
+ */
+const setupEventBusListener = () => {
+  // 监听menu-update事件
+  eventBus.on("menu-update", handleMenuUpdate);
+  console.log("已设置eventBus监听器");
+};
+
+/**
+ * 移除eventBus监听器
+ */
+const removeEventBusListener = () => {
+  // 移除menu-update事件监听
+  eventBus.off("menu-update", handleMenuUpdate);
+  console.log("已移除eventBus监听器");
+};
+
+/**
+ * 根据子应用信息查找对应的菜单索引
+ */
+const findMenuIndexByInfo = (
+  appName: string,
+  menuTitle: string,
+  menuPath: string
+): string | null => {
+  console.log("查找菜单索引:", { appName, menuTitle, menuPath });
+
+  // 遍历菜单数据，查找匹配的菜单项
+  for (const group of menuData.value) {
+    for (const item of group.children) {
+      // 检查一级菜单项
+      if (
+        item.name === appName &&
+        item.title === menuTitle &&
+        item.path === menuPath
+      ) {
+        const menuIndex = `${appName}:${menuPath}`;
+        console.log("找到一级菜单项:", menuIndex);
+        return menuIndex;
+      }
+
+      // 检查子菜单项
+      if (item.children) {
+        for (const subItem of item.children) {
+          if (
+            subItem.name === appName &&
+            subItem.title === menuTitle &&
+            subItem.path === menuPath
+          ) {
+            const menuIndex = `${appName}:${menuPath}`;
+            console.log("找到子菜单项:", menuIndex);
+            return menuIndex;
+          }
+        }
+      }
+    }
+  }
+
+  // 如果没有找到完全匹配的，尝试根据路径匹配
+  for (const group of menuData.value) {
+    for (const item of group.children) {
+      if (item.name === appName && item.path === menuPath) {
+        const menuIndex = `${appName}:${menuPath}`;
+        console.log("根据路径找到菜单项:", menuIndex);
+        return menuIndex;
+      }
+
+      if (item.children) {
+        for (const subItem of item.children) {
+          if (subItem.name === appName && subItem.path === menuPath) {
+            const menuIndex = `${appName}:${menuPath}`;
+            console.log("根据路径找到子菜单项:", menuIndex);
+            return menuIndex;
+          }
+        }
+      }
+    }
+  }
+
+  console.log("未找到匹配的菜单项");
+  return null;
 };
 </script>
 

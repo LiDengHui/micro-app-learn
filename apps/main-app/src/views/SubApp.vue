@@ -13,6 +13,7 @@
       @mounted="handleMounted"
       @beforeshow="handleBeforeshow"
       @aftershow="handleAftershow"
+      @hide="handleHide"
       @error="handleError"
       @unmount="handleUnmount"
     ></micro-app>
@@ -23,6 +24,8 @@
 // ==================== 导入 ====================
 import microApp from "@micro-zoe/micro-app";
 import { useNavigationStore } from "../stores/navigation";
+import eventBus from "../utils/eventBus";
+
 // ==================== 类型定义 ====================
 interface Props {
   appName: string;
@@ -31,6 +34,25 @@ interface Props {
 }
 
 type MicroAppEvent = CustomEvent<{ name: string }>;
+
+// 路由变化事件类型
+interface RouteChangeEvent {
+  name: string;
+  data: {
+    appName: string;
+    path: string;
+    menuTitle: string;
+    menuPath: string;
+  };
+}
+
+// 菜单更新事件类型
+interface MenuUpdateEvent {
+  appName: string;
+  path: string;
+  menuTitle: string;
+  menuPath: string;
+}
 
 // ==================== 组合式函数 ====================
 const props = defineProps<Props>();
@@ -51,6 +73,10 @@ const handleCreated = () => {
  */
 const handleBeforemount = () => {
   console.log("handleBeforemount");
+
+  // 使用props中的appName设置监听器
+  microApp.addDataListener(props.appName, handleRouteChange);
+  console.log(`已设置子应用 ${props.appName} 数据监听器`);
 };
 
 /**
@@ -64,6 +90,9 @@ const handleMounted = (e: MicroAppEvent) => {
 /**
  * 处理子应用推入后台
  */
+const handleHide = () => {
+  console.log("handleHide");
+};
 
 /**
  * 处理子应用即将推入前台
@@ -106,6 +135,39 @@ const handleError = (error: MicroAppEvent) => {
 const handleUnmount = (e: MicroAppEvent) => {
   console.log("handleUnmount", e);
   navigationStore.setAppReady(e.detail.name, false);
+
+  // 移除监听器
+  try {
+    microApp.removeDataListener(props.appName, handleRouteChange);
+    console.log(`已移除子应用 ${props.appName} 数据监听器`);
+  } catch (error) {
+    console.log(`移除子应用 ${props.appName} 数据监听器失败:`, error);
+  }
+};
+
+/**
+ * 处理子应用路由变化
+ */
+const handleRouteChange = (data: RouteChangeEvent) => {
+  console.log("SubApp收到子应用路由变化数据:", data);
+
+  const { appName, path, menuTitle, menuPath } = data.data;
+
+  if (appName === props.appName) {
+    // 更新导航状态
+    navigationStore.setTargetPath(path);
+
+    // 通过eventBus上报menu-update事件
+    const menuUpdateData: MenuUpdateEvent = {
+      appName,
+      path,
+      menuTitle,
+      menuPath,
+    };
+
+    eventBus.emit("menu-update", menuUpdateData);
+    console.log("已通过eventBus上报menu-update事件:", menuUpdateData);
+  }
 };
 </script>
 

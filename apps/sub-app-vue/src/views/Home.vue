@@ -7,7 +7,7 @@
           <el-tag type="success">使用主应用的 Element Plus</el-tag>
         </div>
       </template>
-      
+
       <div class="content">
         <div class="logos">
           <a href="https://vite.dev" target="_blank">
@@ -17,15 +17,15 @@
             <img src="../assets/vue.svg" class="logo vue" alt="Vue logo" />
           </a>
         </div>
-        
+
         <HelloWorld msg="Vite + Vue + Element Plus + Vue Router" />
-        
+
         <div class="navigation-demo">
           <el-divider>页面导航</el-divider>
           <el-row :gutter="20">
             <el-col :span="12">
               <el-button type="primary" @click="$router.push('/orders')">
-                订单管理
+                订单列表
               </el-button>
             </el-col>
             <el-col :span="12">
@@ -35,7 +35,7 @@
             </el-col>
           </el-row>
         </div>
-        
+
         <div class="element-demo">
           <el-divider>Element Plus 组件演示</el-divider>
           <el-row :gutter="20">
@@ -55,10 +55,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import HelloWorld from '../components/HelloWorld.vue'
+import { ref } from "vue";
+import HelloWorld from "../components/HelloWorld.vue";
 
-const inputValue = ref('')
+const inputValue = ref("");
 </script>
 
 <style scoped>
