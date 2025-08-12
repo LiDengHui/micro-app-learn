@@ -25,6 +25,7 @@
 import microApp from "@micro-zoe/micro-app";
 import { useNavigationStore } from "../stores/navigation";
 import eventBus from "../utils/eventBus";
+import { MENU_UPDATE } from "../constants/events";
 
 // ==================== 类型定义 ====================
 interface Props {
@@ -165,7 +166,7 @@ const handleRouteChange = (data: RouteChangeEvent) => {
       menuPath,
     };
 
-    eventBus.emit("menu-update", menuUpdateData);
+    eventBus.emit(MENU_UPDATE, menuUpdateData);
     console.log("已通过eventBus上报menu-update事件:", menuUpdateData);
   }
 };

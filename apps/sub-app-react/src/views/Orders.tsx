@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import styles from "./orders.module.css";
 
 interface Order {
   id: string;
@@ -55,18 +56,14 @@ const Orders: React.FC = () => {
     },
   ]);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "已完成":
-        return "#28a745";
-      case "处理中":
-        return "#ffc107";
-      case "待付款":
-        return "#dc3545";
-      default:
-        return "#6c757d";
-    }
-  };
+  const statusClassMap = useMemo(
+    () => ({
+      已完成: styles.statusCompleted,
+      处理中: styles.statusProcessing,
+      待付款: styles.statusPending,
+    }),
+    []
+  );
 
   const viewOrder = (order: Order) => {
     console.log("查看订单:", order);
@@ -77,155 +74,61 @@ const Orders: React.FC = () => {
   };
 
   return (
-    <div className="page-container" style={{ background: "#f5f5f5" }}>
-      <div className="content-area">
-        <div
-          style={{ background: "white", padding: "20px", borderRadius: "8px" }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: "20px",
-            }}
-          >
+    <div className={styles.pageContainer}>
+      <div className={styles.contentArea}>
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>
             <h1>订单列表</h1>
             <button
               onClick={() => navigate("/")}
-              style={{
-                padding: "10px 20px",
-                background: "#007bff",
-                color: "white",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-              }}
+              className={styles.primaryButton}
             >
               返回首页
             </button>
           </div>
 
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <div className={styles.tableWrapper}>
+            <table className={styles.table}>
               <thead>
-                <tr style={{ background: "#f8f9fa" }}>
-                  <th
-                    style={{
-                      padding: "12px",
-                      textAlign: "left",
-                      borderBottom: "1px solid #dee2e6",
-                    }}
-                  >
-                    订单ID
-                  </th>
-                  <th
-                    style={{
-                      padding: "12px",
-                      textAlign: "left",
-                      borderBottom: "1px solid #dee2e6",
-                    }}
-                  >
-                    客户名称
-                  </th>
-                  <th
-                    style={{
-                      padding: "12px",
-                      textAlign: "left",
-                      borderBottom: "1px solid #dee2e6",
-                    }}
-                  >
-                    产品名称
-                  </th>
-                  <th
-                    style={{
-                      padding: "12px",
-                      textAlign: "left",
-                      borderBottom: "1px solid #dee2e6",
-                    }}
-                  >
-                    金额
-                  </th>
-                  <th
-                    style={{
-                      padding: "12px",
-                      textAlign: "left",
-                      borderBottom: "1px solid #dee2e6",
-                    }}
-                  >
-                    状态
-                  </th>
-                  <th
-                    style={{
-                      padding: "12px",
-                      textAlign: "left",
-                      borderBottom: "1px solid #dee2e6",
-                    }}
-                  >
-                    创建时间
-                  </th>
-                  <th
-                    style={{
-                      padding: "12px",
-                      textAlign: "left",
-                      borderBottom: "1px solid #dee2e6",
-                    }}
-                  >
-                    操作
-                  </th>
+                <tr className={styles.theadRow}>
+                  <th className={styles.th}>订单ID</th>
+                  <th className={styles.th}>客户名称</th>
+                  <th className={styles.th}>产品名称</th>
+                  <th className={styles.th}>金额</th>
+                  <th className={styles.th}>状态</th>
+                  <th className={styles.th}>创建时间</th>
+                  <th className={styles.th}>操作</th>
                 </tr>
               </thead>
               <tbody>
                 {orders.map((order) => (
-                  <tr
-                    key={order.id}
-                    style={{ borderBottom: "1px solid #dee2e6" }}
-                  >
-                    <td style={{ padding: "12px" }}>{order.id}</td>
-                    <td style={{ padding: "12px" }}>{order.customer}</td>
-                    <td style={{ padding: "12px" }}>{order.product}</td>
-                    <td style={{ padding: "12px" }}>¥{order.amount}</td>
-                    <td style={{ padding: "12px" }}>
+                  <tr key={order.id} className={styles.row}>
+                    <td className={styles.td}>{order.id}</td>
+                    <td className={styles.td}>{order.customer}</td>
+                    <td className={styles.td}>{order.product}</td>
+                    <td className={styles.td}>¥{order.amount}</td>
+                    <td className={styles.td}>
                       <span
-                        style={{
-                          padding: "4px 8px",
-                          borderRadius: "4px",
-                          color: "white",
-                          background: getStatusColor(order.status),
-                          fontSize: "12px",
-                        }}
+                        className={`${styles.statusBadge} ${
+                          statusClassMap[
+                            order.status as keyof typeof statusClassMap
+                          ]
+                        }`}
                       >
                         {order.status}
                       </span>
                     </td>
-                    <td style={{ padding: "12px" }}>{order.date}</td>
-                    <td style={{ padding: "12px" }}>
+                    <td className={styles.td}>{order.date}</td>
+                    <td className={styles.td}>
                       <button
                         onClick={() => viewOrder(order)}
-                        style={{
-                          padding: "4px 8px",
-                          marginRight: "5px",
-                          background: "#6c757d",
-                          color: "white",
-                          border: "none",
-                          borderRadius: "4px",
-                          cursor: "pointer",
-                          fontSize: "12px",
-                        }}
+                        className={`${styles.button} ${styles.buttonGrey}`}
                       >
                         查看
                       </button>
                       <button
                         onClick={() => editOrder(order)}
-                        style={{
-                          padding: "4px 8px",
-                          background: "#007bff",
-                          color: "white",
-                          border: "none",
-                          borderRadius: "4px",
-                          cursor: "pointer",
-                          fontSize: "12px",
-                        }}
+                        className={`${styles.button} ${styles.buttonBlue}`}
                       >
                         编辑
                       </button>

@@ -6,9 +6,15 @@ import App from "./App.vue";
 import router from "./router";
 import "./style.scss";
 import microApp from "@micro-zoe/micro-app";
+import eventBus from "./utils/eventBus";
 
 // Initialize micro-app
 microApp.start({});
+
+// Enable EventBus verbose logs in development
+if (import.meta.env.DEV) {
+  eventBus.setLoggingEnabled(true);
+}
 
 // Expose shared libraries to sub-apps
 (window as any).Vue = { createApp };

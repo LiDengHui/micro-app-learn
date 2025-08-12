@@ -1,0 +1,91 @@
+.pageContainer {
+  background: #f5f5f5;
+}
+
+.contentArea {}
+
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.primaryButton {
+  padding: 10px 20px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.theadRow {
+  background: #f8f9fa;
+}
+
+.th,
+.td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.row {
+  border-bottom: 1px solid #dee2e6;
+}
+
+.statusBadge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: white;
+  font-size: 12px;
+}
+
+.statusCompleted {
+  background: #28a745;
+}
+
+.statusProcessing {
+  background: #ffc107;
+}
+
+.statusPending {
+  background: #dc3545;
+}
+
+.button {
+  padding: 4px 8px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.buttonGrey {
+  background: #6c757d;
+  color: white;
+  margin-right: 5px;
+}
+
+.buttonBlue {
+  background: #007bff;
+  color: white;
+}
+
+

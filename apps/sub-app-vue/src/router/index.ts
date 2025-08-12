@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import type { RouteRecordRaw } from "vue-router";
+import { notifyMainAppRouteChange } from "./notifyMainApp";
 
 // 扩展Window接口以支持microApp
 declare global {
@@ -11,14 +12,6 @@ declare global {
     };
   }
 }
-
-// 路由映射表 - 用于通知主应用当前菜单项
-const routeMenuMap: Record<string, { title: string; path: string }> = {
-  "/": { title: "订单管理", path: "/" },
-  "/orders": { title: "订单列表", path: "/orders" },
-  "/users": { title: "用户管理", path: "/users" },
-  "/products": { title: "产品管理", path: "/products" },
-};
 
 const routes: RouteRecordRaw[] = [
   {
@@ -56,44 +49,4 @@ router.beforeEach((to, from, next) => {
 /**
  * 通知主应用路由变化
  */
-function notifyMainAppRouteChange(path: string) {
-  try {
-    // 检查是否在微前端环境中
-    if (window.__MICRO_APP_ENVIRONMENT__) {
-      const menuInfo = routeMenuMap[path];
-
-      if (menuInfo) {
-        // 使用 microApp.dispatch 发送路由变化数据
-        window.microApp?.dispatch({
-          name: "route-change",
-          data: {
-            appName: "vue-app",
-            path: path,
-            menuTitle: menuInfo.title,
-            menuPath: menuInfo.path,
-          },
-        });
-
-        console.log("已通知主应用路由变化:", menuInfo);
-      } else {
-        // 如果没有对应的菜单项，发送默认的首页菜单信息
-        const defaultMenuInfo = routeMenuMap["/"];
-        window.microApp?.dispatch({
-          name: "route-change",
-          data: {
-            appName: "vue-app",
-            path: path,
-            menuTitle: defaultMenuInfo.title,
-            menuPath: defaultMenuInfo.path,
-          },
-        });
-
-        console.log("路由无对应菜单，使用默认菜单:", defaultMenuInfo);
-      }
-    }
-  } catch (error) {
-    console.error("通知主应用路由变化失败:", error);
-  }
-}
-
 export default router;

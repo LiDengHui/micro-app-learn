@@ -8,6 +8,7 @@ interface EventMap {
 
 class EventBus {
   private events: EventMap = {};
+  private loggingEnabled = false;
 
   /**
    * 监听事件
@@ -19,7 +20,7 @@ class EventBus {
       this.events[eventName] = [];
     }
     this.events[eventName].push(callback);
-    console.log(`EventBus: 已监听事件 ${eventName}`);
+    if (this.loggingEnabled) console.log(`EventBus: 已监听事件 ${eventName}`);
   }
 
   /**
@@ -36,11 +37,13 @@ class EventBus {
       const index = this.events[eventName].indexOf(callback);
       if (index > -1) {
         this.events[eventName].splice(index, 1);
-        console.log(`EventBus: 已移除事件 ${eventName} 的指定监听器`);
+        if (this.loggingEnabled)
+          console.log(`EventBus: 已移除事件 ${eventName} 的指定监听器`);
       }
     } else {
       delete this.events[eventName];
-      console.log(`EventBus: 已移除事件 ${eventName} 的所有监听器`);
+      if (this.loggingEnabled)
+        console.log(`EventBus: 已移除事件 ${eventName} 的所有监听器`);
     }
   }
 
@@ -51,11 +54,13 @@ class EventBus {
    */
   emit(eventName: string, ...args: any[]): void {
     if (!this.events[eventName]) {
-      console.log(`EventBus: 事件 ${eventName} 没有监听器`);
+      if (this.loggingEnabled)
+        console.log(`EventBus: 事件 ${eventName} 没有监听器`);
       return;
     }
 
-    console.log(`EventBus: 触发事件 ${eventName}`, args);
+    if (this.loggingEnabled)
+      console.log(`EventBus: 触发事件 ${eventName}`, args);
     this.events[eventName].forEach((callback) => {
       try {
         callback(...args);
@@ -78,7 +83,14 @@ class EventBus {
    */
   clear(): void {
     this.events = {};
-    console.log("EventBus: 已清除所有事件监听器");
+    if (this.loggingEnabled) console.log("EventBus: 已清除所有事件监听器");
+  }
+
+  /**
+   * 设置是否开启日志
+   */
+  setLoggingEnabled(enabled: boolean): void {
+    this.loggingEnabled = enabled;
   }
 }
 

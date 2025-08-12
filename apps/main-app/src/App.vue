@@ -59,8 +59,10 @@ import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import microApp from "@micro-zoe/micro-app";
 import { subApps } from "./config/subApps";
+import { buildMenuData, type MenuGroup } from "./config/menu";
 import { useNavigationStore } from "./stores/navigation";
 import eventBus from "./utils/eventBus";
+import { MENU_UPDATE } from "./constants/events";
 
 // 扩展Window接口以支持microApp
 declare global {
@@ -72,18 +74,6 @@ declare global {
 }
 
 // ==================== 类型定义 ====================
-interface MenuItem {
-  title: string;
-  name?: string;
-  path?: string;
-  moduleUrl?: string;
-  children?: MenuItem[];
-}
-
-interface MenuGroup {
-  title: string;
-  children: MenuItem[];
-}
 
 // 菜单更新事件类型
 interface MenuUpdateEvent {
@@ -109,66 +99,7 @@ const menuActiveIndex = computed(() => {
   return activeMenuIndex.value || currentRoute.value;
 });
 
-const menuData = ref<MenuGroup[]>([
-  {
-    title: subApps["react-app"].title,
-    children: [
-      {
-        title: "订单管理",
-        name: subApps["react-app"].name,
-        path: "/",
-        children: [
-          {
-            title: "订单列表",
-            name: subApps["react-app"].name,
-            path: "/orders",
-          },
-          {
-            title: "用户管理",
-            name: subApps["react-app"].name,
-            path: "/users",
-          },
-        ],
-      },
-      { title: "产品管理", name: subApps["react-app"].name, path: "/products" },
-    ],
-  },
-  {
-    title: subApps["vue-app"].title,
-    children: [
-      {
-        title: "订单管理",
-        name: subApps["vue-app"].name,
-        path: "/",
-        children: [
-          { title: "订单列表", name: subApps["vue-app"].name, path: "/orders" },
-          { title: "用户管理", name: subApps["vue-app"].name, path: "/users" },
-        ],
-      },
-      { title: "产品管理", name: subApps["vue-app"].name, path: "/products" },
-    ],
-  },
-  {
-    title: "系统设置",
-    children: [
-      {
-        title: "基础设置",
-        moduleUrl: "https://example.com/settings",
-        children: [
-          {
-            title: "系统配置",
-            moduleUrl: "https://example.com/settings/config",
-          },
-          {
-            title: "用户权限",
-            moduleUrl: "https://example.com/settings/permissions",
-          },
-        ],
-      },
-      { title: "安全中心", moduleUrl: "https://example.com/security" },
-    ],
-  },
-]);
+const menuData = ref<MenuGroup[]>(buildMenuData());
 
 // ==================== 生命周期 ====================
 onMounted(() => {
@@ -298,7 +229,7 @@ const handleMenuUpdate = (menuData: MenuUpdateEvent) => {
  */
 const setupEventBusListener = () => {
   // 监听menu-update事件
-  eventBus.on("menu-update", handleMenuUpdate);
+  eventBus.on(MENU_UPDATE, handleMenuUpdate);
   console.log("已设置eventBus监听器");
 };
 
@@ -307,7 +238,7 @@ const setupEventBusListener = () => {
  */
 const removeEventBusListener = () => {
   // 移除menu-update事件监听
-  eventBus.off("menu-update", handleMenuUpdate);
+  eventBus.off(MENU_UPDATE, handleMenuUpdate);
   console.log("已移除eventBus监听器");
 };
 
@@ -406,7 +337,7 @@ const findMenuIndexByInfo = (
 
 .logo {
   margin: 0;
-  font-size: 1.5.5rem;
+  font-size: 1.5rem;
   font-weight: 600;
   color: white;
 }

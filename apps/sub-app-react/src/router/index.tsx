@@ -3,14 +3,7 @@ import App from "../App";
 import Home from "../views/Home";
 import Orders from "../views/Orders";
 import Users from "../views/Users";
-
-// 路由映射表 - 用于通知主应用当前菜单项
-const routeMenuMap: Record<string, { title: string; path: string }> = {
-  "/": { title: "订单管理", path: "/" },
-  "/orders": { title: "订单列表", path: "/orders" },
-  "/users": { title: "用户管理", path: "/users" },
-  "/products": { title: "产品管理", path: "/products" },
-};
+import { notifyMainAppRouteChange } from "./notifyMainApp";
 
 const router = createBrowserRouter([
   {
@@ -79,51 +72,7 @@ const createRouteListener = () => {
   });
 };
 
-/**
- * 通知主应用路由变化
- */
-function notifyMainAppRouteChange(path: string) {
-  try {
-    // 检查是否在微前端环境中
-    if (window.__MICRO_APP_ENVIRONMENT__) {
-      const menuInfo = routeMenuMap[path];
-
-      if (menuInfo) {
-        // 使用 microApp.dispatch 发送路由变化数据
-        window.microApp?.dispatch({
-          name: "route-change",
-          data: {
-            appName: "react-app",
-            path: path,
-            menuTitle: menuInfo.title,
-            menuPath: menuInfo.path,
-          },
-        });
-
-        console.log("React子应用已通知主应用路由变化:", menuInfo);
-      } else {
-        // 如果没有对应的菜单项，发送默认的首页菜单信息
-        const defaultMenuInfo = routeMenuMap["/"];
-        window.microApp?.dispatch({
-          name: "route-change",
-          data: {
-            appName: "react-app",
-            path: path,
-            menuTitle: defaultMenuInfo.title,
-            menuPath: defaultMenuInfo.path,
-          },
-        });
-
-        console.log(
-          "React子应用路由无对应菜单，使用默认菜单:",
-          defaultMenuInfo
-        );
-      }
-    }
-  } catch (error) {
-    console.error("React子应用通知主应用路由变化失败:", error);
-  }
-}
+// 由 notifyMainApp.ts 提供通知函数
 
 // 初始化路由监听器
 if (window.__MICRO_APP_ENVIRONMENT__) {

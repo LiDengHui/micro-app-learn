@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { ref, computed, watch } from "vue";
+import { ref, computed } from "vue";
 
 export const useNavigationStore = defineStore("navigation", () => {
   // ==================== 状态定义 ====================
@@ -84,13 +84,8 @@ export const useNavigationStore = defineStore("navigation", () => {
    * 设置应用准备状态
    */
   const setAppReady = (appName: string, ready: boolean) => {
-    // 遍历readyAppMap，如果readyAppMap[appName]为true，则设置为false
-    for (const key in readyAppMap.value) {
-      if (readyAppMap.value[key]) {
-        readyAppMap.value[key] = false;
-      }
-    }
-    readyAppMap.value[appName] = ready;
+    // 仅保留当前app的就绪状态，避免旧状态残留
+    readyAppMap.value = { [appName]: ready };
   };
 
   /**
