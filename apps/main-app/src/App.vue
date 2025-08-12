@@ -85,17 +85,6 @@ interface MenuGroup {
   children: MenuItem[];
 }
 
-// 子应用路由变化数据类型
-interface RouteChangeData {
-  name: string;
-  data: {
-    appName: string;
-    path: string;
-    menuTitle: string;
-    menuPath: string;
-  };
-}
-
 // 菜单更新事件类型
 interface MenuUpdateEvent {
   appName: string;
