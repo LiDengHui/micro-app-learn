@@ -7,49 +7,21 @@
       </div>
     </div>
 
-    <!-- 头部导航 - 仅在非登录页显示 -->
-    <el-header v-else-if="!isLoginPage" class="header">
+    <!-- 头部导航：仅在完成初始化且已登录时显示，避免闪烁 -->
+    <el-header
+      v-else-if="isInitialized && authStore.isAuthenticated"
+      class="header"
+    >
       <div class="header-content">
         <h1 class="logo">Micro-App Framework</h1>
 
-        <el-menu
+        <MainMenu
+          v-if="authStore.isAuthenticated"
           ref="mainMenuRef"
-          :default-active="menuActiveIndex"
-          mode="horizontal"
-          class="main-nav"
+          :menu-data="menuData"
+          :active-index="menuActiveIndex"
           @select="handleMenuSelect"
-        >
-          <el-sub-menu
-            v-for="group in menuData"
-            :key="group.title"
-            :index="group.title"
-          >
-            <template #title>
-              <span>{{ group.title }}</span>
-            </template>
-
-            <template v-for="item in group.children" :key="item.title">
-              <el-menu-item
-                v-if="!item.children || item.children.length === 0"
-                :index="item.name + ':' + item.path"
-              >
-                {{ item.title }}
-              </el-menu-item>
-
-              <el-sub-menu v-else :index="item.title">
-                <template #title>{{ item.title }}</template>
-
-                <el-menu-item
-                  v-for="subItem in item.children"
-                  :key="subItem.title"
-                  :index="subItem.name + ':' + subItem.path"
-                >
-                  {{ subItem.title }}
-                </el-menu-item>
-              </el-sub-menu>
-            </template>
-          </el-sub-menu>
-        </el-menu>
+        />
 
         <!-- 用户信息区域 -->
         <div class="user-info">
@@ -91,6 +63,7 @@ import { User, ArrowDown, Loading } from "@element-plus/icons-vue";
 import microApp from "@micro-zoe/micro-app";
 import { subApps } from "./config/subApps";
 import { buildMenuData, type MenuGroup } from "./config/menu";
+import MainMenu from "./components/MainMenu.vue";
 import { useNavigationStore } from "./stores/navigation";
 import { useAuthStore } from "./stores/auth";
 import eventBus from "./utils/eventBus";
@@ -402,6 +375,7 @@ const handleUserCommand = async (command: string) => {
 .container.login-layout {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   position: relative;
+  overflow: hidden;
 }
 
 .container.login-layout::before {
@@ -427,6 +401,39 @@ const handleUserCommand = async (command: string) => {
       transparent 50%
     );
   pointer-events: none;
+}
+
+/* 科技感网格特效（轻微动画） */
+.container.login-layout::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.06) 0px,
+      rgba(255, 255, 255, 0.06) 1px,
+      transparent 1px,
+      transparent 40px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.04) 0px,
+      rgba(255, 255, 255, 0.04) 1px,
+      transparent 1px,
+      transparent 40px
+    );
+  animation: gridMove 20s linear infinite;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+@keyframes gridMove {
+  0% {
+    background-position: 0 0, 0 0;
+  }
+  100% {
+    background-position: 0 40px, 40px 0;
+  }
 }
 
 /* ==================== 加载屏幕样式 ==================== */
@@ -544,6 +551,11 @@ const handleUserCommand = async (command: string) => {
   align-items: center;
   justify-content: center;
   padding: 0;
+}
+
+/* 登录页使 el-main 背景透明，避免遮挡渐变背景 */
+.container.login-layout .content {
+  background: transparent !important;
 }
 
 #micro-content {

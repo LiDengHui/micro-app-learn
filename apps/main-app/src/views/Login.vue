@@ -19,6 +19,8 @@
             placeholder="请输入用户名"
             size="large"
             clearable
+            name="username"
+            autocomplete="username"
           >
             <template #prefix>
               <el-icon><User /></el-icon>
@@ -34,6 +36,8 @@
             size="large"
             show-password
             clearable
+            name="password"
+            autocomplete="current-password"
           >
             <template #prefix>
               <el-icon><Lock /></el-icon>
@@ -163,11 +167,41 @@ onMounted(() => {
   transform: translateY(0);
   transition: all 0.3s ease;
   animation: slideInUp 0.6s ease-out;
+  position: relative;
+  overflow: hidden;
 }
 
 .login-form-wrapper:hover {
   transform: translateY(-5px);
   box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
+}
+
+/* 霓虹边框流光效果 */
+.login-form-wrapper::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  padding: 1px; /* 控制边框粗细 */
+  background: linear-gradient(
+    90deg,
+    rgba(76, 110, 245, 0.8),
+    rgba(118, 75, 162, 0.8)
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: neonFlow 3s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes neonFlow {
+  0% {
+    filter: hue-rotate(0deg);
+  }
+  100% {
+    filter: hue-rotate(360deg);
+  }
 }
 
 .login-header {

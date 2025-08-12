@@ -22,12 +22,12 @@
 
 <script setup lang="ts">
 // ==================== 导入 ====================
-import { getCurrentInstance } from "vue";
 import { useRouter } from "vue-router";
 import microApp from "@micro-zoe/micro-app";
 import { useNavigationStore } from "../stores/navigation";
 import eventBus from "../utils/eventBus";
 import { MENU_UPDATE } from "../constants/events";
+import { onUnmounted } from "vue";
 
 // ==================== 类型定义 ====================
 interface Props {
@@ -144,6 +144,8 @@ const handleError = (error: MicroAppEvent) => {
 const handleUnmount = (e: MicroAppEvent) => {
   console.log("handleUnmount", e);
   navigationStore.setAppReady(e.detail.name, false);
+  // 重置导航状态
+  navigationStore.clearAllNavigation();
 
   // 移除监听器
   try {
@@ -188,6 +190,12 @@ const handleNavigateToMain = (data: any) => {
   // 跳转到主应用首页
   router.push(data.data?.path || "/");
 };
+
+// ==================== 生命周期 ====================
+onUnmounted(() => {
+  // 组件卸载时重置导航状态
+  navigationStore.clearAllNavigation();
+});
 </script>
 
 <style scoped>
