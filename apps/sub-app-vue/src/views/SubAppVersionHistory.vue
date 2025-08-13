@@ -138,39 +138,41 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="操作" width="280" fixed="right">
+          <el-table-column label="操作" width="200" fixed="right">
             <template #default="{ row }">
-              <el-button
-                type="primary"
-                size="small"
-                @click="handleViewVersionDetail(row)"
-              >
-                查看详情
-              </el-button>
-              <el-button
-                v-if="!row.isCurrentVersion && row.status !== 'deprecated'"
-                type="success"
-                size="small"
-                @click="handleRollback(row)"
-              >
-                回滚到此版本
-              </el-button>
-              <el-button
-                v-if="!row.isCurrentVersion"
-                type="warning"
-                size="small"
-                @click="handleUpdateStatus(row)"
-              >
-                更新状态
-              </el-button>
-              <el-button
-                v-if="!row.isCurrentVersion"
-                type="danger"
-                size="small"
-                @click="handleDeleteVersion(row)"
-              >
-                删除
-              </el-button>
+              <TableActionButtons :max-visible="1">
+                <el-button
+                  type="primary"
+                  size="small"
+                  @click="handleViewVersionDetail(row)"
+                >
+                  查看详情
+                </el-button>
+                <el-button
+                  v-if="!row.isCurrentVersion && row.status !== 'deprecated'"
+                  type="success"
+                  size="small"
+                  @click="handleRollback(row)"
+                >
+                  回滚到此版本
+                </el-button>
+                <el-button
+                  v-if="!row.isCurrentVersion"
+                  type="warning"
+                  size="small"
+                  @click="handleUpdateStatus(row)"
+                >
+                  更新状态
+                </el-button>
+                <el-button
+                  v-if="!row.isCurrentVersion"
+                  type="danger"
+                  size="small"
+                  @click="handleDeleteVersion(row)"
+                >
+                  删除
+                </el-button>
+              </TableActionButtons>
             </template>
           </el-table-column>
         </el-table>
@@ -321,6 +323,7 @@ import { ref, reactive, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { Upload, Search, Refresh, Clock } from "@element-plus/icons-vue";
+import TableActionButtons from "../components/TableActionButtons.vue";
 import {
   getSubAppDetail,
   getSubAppVersions,

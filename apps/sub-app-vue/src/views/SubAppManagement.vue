@@ -146,34 +146,36 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="操作" width="280" fixed="right">
+        <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
-            <el-button
-              type="primary"
-              size="small"
-              @click="handleViewDetail(row)"
-            >
-              查看详情
-            </el-button>
-            <el-button
-              v-if="row.status === 'active'"
-              type="warning"
-              size="small"
-              @click="handleToggleStatus(row, 'inactive')"
-            >
-              停用
-            </el-button>
-            <el-button
-              v-else
-              type="success"
-              size="small"
-              @click="handleToggleStatus(row, 'active')"
-            >
-              启用
-            </el-button>
-            <el-button type="danger" size="small" @click="handleDelete(row)">
-              删除
-            </el-button>
+            <TableActionButtons :max-visible="1">
+              <el-button
+                type="primary"
+                size="small"
+                @click="handleViewDetail(row)"
+              >
+                查看详情
+              </el-button>
+              <el-button
+                v-if="row.status === 'active'"
+                type="warning"
+                size="small"
+                @click="handleToggleStatus(row, 'inactive')"
+              >
+                停用
+              </el-button>
+              <el-button
+                v-else
+                type="success"
+                size="small"
+                @click="handleToggleStatus(row, 'active')"
+              >
+                启用
+              </el-button>
+              <el-button type="danger" size="small" @click="handleDelete(row)">
+                删除
+              </el-button>
+            </TableActionButtons>
           </template>
         </el-table-column>
       </el-table>
@@ -205,6 +207,7 @@ import {
   Refresh,
   Box,
 } from "@element-plus/icons-vue";
+import TableActionButtons from "../components/TableActionButtons.vue";
 import {
   getSubAppList,
   uploadSubApp,

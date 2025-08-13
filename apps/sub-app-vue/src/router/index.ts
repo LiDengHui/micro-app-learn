@@ -38,6 +38,11 @@ const routes: RouteRecordRaw[] = [
     name: "SubAppVersionHistory",
     component: () => import("../views/SubAppVersionHistory.vue"),
   },
+  {
+    path: "/test-action-buttons",
+    name: "TestActionButtons",
+    component: () => import("../views/TestPage.vue"),
+  },
 ];
 
 const router = createRouter({
