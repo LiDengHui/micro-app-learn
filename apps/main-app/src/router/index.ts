@@ -72,7 +72,7 @@ const router = createRouter({
 });
 
 // 路由守卫
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, _from, next) => {
   // 动态导入 authStore 避免循环依赖
   const { useAuthStore } = await import("../stores/auth");
   const authStore = useAuthStore();

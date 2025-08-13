@@ -67,6 +67,11 @@ export function buildMenuData(): MenuGroup[] {
           name: subApps["vue-app"].name,
           path: "/user-management",
         },
+        {
+          title: "子应用管理",
+          name: subApps["vue-app"].name,
+          path: "/sub-app-management",
+        },
         { title: "产品管理", name: subApps["vue-app"].name, path: "/products" },
       ],
     },

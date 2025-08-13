@@ -48,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineProps, defineEmits, defineExpose } from "vue";
+import { ref } from "vue";
 import type { MenuGroup } from "../config/menu";
 
 const props = defineProps<{

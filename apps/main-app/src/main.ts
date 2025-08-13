@@ -7,6 +7,8 @@ import router from "./router";
 import "./style.scss";
 import microApp from "@micro-zoe/micro-app";
 import eventBus from "./utils/eventBus";
+import api from "./utils/request";
+import { testRequestConfig } from "./utils/requestTest";
 
 // Initialize micro-app
 microApp.start({});
@@ -20,6 +22,7 @@ if (import.meta.env.DEV) {
 (window as any).Vue = { createApp };
 (window as any).VueRouter = router;
 (window as any).ElementPlus = ElementPlus;
+(window as any).MainAppAxios = api;
 
 // Handle micro-app lifecycle
 microApp.addDataListener("main-app", (data: any) => {
@@ -33,3 +36,6 @@ app.use(pinia);
 app.use(ElementPlus);
 app.use(router);
 app.mount("#app");
+
+// 测试新的request配置
+testRequestConfig();

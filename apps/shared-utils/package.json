@@ -1,0 +1,33 @@
+{
+  "name": "@micro-frontend/shared-utils",
+  "version": "1.0.0",
+  "description": "Shared utilities for micro-frontend applications",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "micro-frontend",
+    "axios",
+    "shared"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "omit-empty": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/omit-empty": "^1.0.4",
+    "typescript": "^5.0.0"
+  },
+  "files": [
+    "dist"
+  ]
+}

@@ -190,6 +190,7 @@ onMounted(() => {
   );
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask-composite: exclude;
   animation: neonFlow 3s linear infinite;
   pointer-events: none;

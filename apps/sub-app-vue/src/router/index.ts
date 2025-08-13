@@ -23,6 +23,21 @@ const routes: RouteRecordRaw[] = [
     name: "UserManagement",
     component: () => import("../views/UserManagement.vue"),
   },
+  {
+    path: "/sub-app-management",
+    name: "SubAppManagement",
+    component: () => import("../views/SubAppManagement.vue"),
+  },
+  {
+    path: "/sub-app-detail/:id",
+    name: "SubAppDetail",
+    component: () => import("../views/SubAppDetail.vue"),
+  },
+  {
+    path: "/sub-app-version-history/:subAppId",
+    name: "SubAppVersionHistory",
+    component: () => import("../views/SubAppVersionHistory.vue"),
+  },
 ];
 
 const router = createRouter({
