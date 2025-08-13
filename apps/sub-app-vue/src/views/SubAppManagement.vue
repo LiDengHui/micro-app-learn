@@ -69,7 +69,7 @@
         </el-form-item>
         <el-form-item label="状态">
           <el-select
-            v-model="searchForm.status"
+            v-model="searchForm.appStatus"
             placeholder="请选择状态"
             clearable
           >
@@ -227,7 +227,7 @@ const subAppList = ref<SubAppInfo[]>([]);
 // 搜索表单
 const searchForm = reactive<QueryParams>({
   name: "",
-  status: "",
+  appStatus: "",
 });
 
 // 分页信息
@@ -253,7 +253,7 @@ const loadSubAppList = async () => {
 
     const response = await getSubAppList(params);
     if (response.code === 200) {
-      subAppList.value = response.data.items;
+      subAppList.value = response.data.list;
       pagination.total = response.data.total;
     } else {
       ElMessage.error(response.message || "获取子应用列表失败");
@@ -322,7 +322,7 @@ const handleSearch = () => {
  */
 const handleReset = () => {
   searchForm.name = "";
-  searchForm.status = "";
+  searchForm.appStatus = "";
   pagination.page = 1;
   loadSubAppList();
 };

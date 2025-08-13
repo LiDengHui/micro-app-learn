@@ -415,7 +415,7 @@ const loadVersionList = async () => {
 
     const response = await getSubAppVersions(subAppId, params);
     if (response.code === 200) {
-      versionList.value = response.data.items;
+      versionList.value = response.data.list;
       pagination.total = response.data.total;
     } else {
       ElMessage.error(response.message || "获取版本列表失败");

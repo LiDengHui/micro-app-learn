@@ -63,7 +63,6 @@ export const useAuthStore = defineStore("auth", () => {
     try {
       loginLoading.value = true;
       const response: LoginResponse = await loginAPI(loginForm);
-
       if (response.data) {
         const loginData: LoginData = response.data;
 

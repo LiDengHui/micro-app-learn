@@ -9,9 +9,9 @@
     <div class="toolbar">
       <div class="search-box">
         <el-input
-          v-model="searchQuery"
-          placeholder="搜索用户名、昵称或邮箱"
-          style="width: 300px"
+          v-model="searchQuery.username"
+          placeholder="搜索用户名"
+          style="width: 200px; margin-right: 10px"
           clearable
           @input="handleSearch"
         >
@@ -19,6 +19,31 @@
             <el-icon><Search /></el-icon>
           </template>
         </el-input>
+        <el-input
+          v-model="searchQuery.account"
+          placeholder="搜索账号"
+          style="width: 200px; margin-right: 10px"
+          clearable
+          @input="handleSearch"
+        >
+          <template #prefix>
+            <el-icon><UserIcon /></el-icon>
+          </template>
+        </el-input>
+        <el-select
+          v-model="searchQuery.departmentId"
+          placeholder="选择部门"
+          style="width: 150px; margin-right: 10px"
+          clearable
+          @change="handleSearch"
+        >
+          <el-option
+            v-for="dept in departmentList"
+            :key="dept.id"
+            :label="dept.name"
+            :value="dept.id"
+          />
+        </el-select>
       </div>
       <div class="action-buttons">
         <el-button type="primary" @click="handleCreate">
@@ -43,14 +68,28 @@
       >
         <el-table-column prop="id" label="ID" width="80" />
         <el-table-column prop="username" label="用户名" width="120" />
+        <el-table-column prop="account" label="账号" width="120" />
         <el-table-column prop="nickname" label="昵称" width="120" />
         <el-table-column prop="email" label="邮箱" width="200" />
-        <el-table-column prop="phone" label="手机号" width="140" />
-        <el-table-column prop="status" label="状态" width="100">
+        <el-table-column prop="mobile" label="手机号" width="140" />
+        <el-table-column prop="sex" label="性别" width="80">
           <template #default="{ row }">
-            <el-tag :type="row.status === 1 ? 'success' : 'danger'">
-              {{ row.status === 1 ? "正常" : "禁用" }}
-            </el-tag>
+            {{ row.sex === 1 ? "男" : row.sex === 2 ? "女" : "未知" }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="department" label="部门" width="120">
+          <template #default="{ row }">
+            {{ row.department?.name || "-" }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="role" label="角色" width="120">
+          <template #default="{ row }">
+            {{ row.role?.name || "-" }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="login_date" label="最后登录" width="180">
+          <template #default="{ row }">
+            {{ row.login_date ? formatDate(row.login_date) : "-" }}
           </template>
         </el-table-column>
         <el-table-column prop="createdAt" label="创建时间" width="180">
@@ -58,19 +97,12 @@
             {{ formatDate(row.createdAt) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="240" fixed="right">
+        <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
             <el-button size="small" @click="handleView(row)">查看</el-button>
             <el-button size="small" type="primary" @click="handleEdit(row)"
               >编辑</el-button
             >
-            <el-button
-              size="small"
-              :type="row.status === 1 ? 'warning' : 'success'"
-              @click="handleToggleStatus(row)"
-            >
-              {{ row.status === 1 ? "禁用" : "启用" }}
-            </el-button>
             <el-button size="small" type="danger" @click="handleDelete(row)"
               >删除</el-button
             >
@@ -96,7 +128,7 @@
     <el-dialog
       v-model="dialogVisible"
       :title="dialogTitle"
-      width="600px"
+      width="700px"
       @close="resetForm"
     >
       <el-form
@@ -105,39 +137,106 @@
         :rules="formRules"
         label-width="100px"
       >
-        <el-form-item label="用户名" prop="username">
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="用户名" prop="username">
+              <el-input
+                v-model="userForm.username"
+                :disabled="dialogMode === 'edit'"
+                placeholder="请输入用户名"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="账号" prop="account">
+              <el-input v-model="userForm.account" placeholder="请输入账号" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item
+              v-if="dialogMode === 'create'"
+              label="密码"
+              prop="password"
+            >
+              <el-input
+                v-model="userForm.password"
+                type="password"
+                placeholder="请输入密码"
+                show-password
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="昵称" prop="nickname">
+              <el-input v-model="userForm.nickname" placeholder="请输入昵称" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="邮箱" prop="email">
+              <el-input v-model="userForm.email" placeholder="请输入邮箱" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="手机号" prop="mobile">
+              <el-input v-model="userForm.mobile" placeholder="请输入手机号" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="性别" prop="sex">
+              <el-select v-model="userForm.sex" placeholder="请选择性别">
+                <el-option label="男" :value="1" />
+                <el-option label="女" :value="2" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="部门" prop="departmentId">
+              <el-select
+                v-model="userForm.departmentId"
+                placeholder="请选择部门"
+              >
+                <el-option
+                  v-for="dept in departmentList"
+                  :key="dept.id"
+                  :label="dept.name"
+                  :value="dept.id"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="角色" prop="roleId">
+              <el-select v-model="userForm.roleId" placeholder="请选择角色">
+                <el-option
+                  v-for="role in roleList"
+                  :key="role.id"
+                  :label="role.name"
+                  :value="role.id"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-form-item label="备注" prop="remark">
           <el-input
-            v-model="userForm.username"
-            :disabled="dialogMode === 'edit'"
-            placeholder="请输入用户名"
+            v-model="userForm.remark"
+            type="textarea"
+            :rows="3"
+            placeholder="请输入备注信息"
           />
-        </el-form-item>
-        <el-form-item
-          v-if="dialogMode === 'create'"
-          label="密码"
-          prop="password"
-        >
-          <el-input
-            v-model="userForm.password"
-            type="password"
-            placeholder="请输入密码"
-            show-password
-          />
-        </el-form-item>
-        <el-form-item label="昵称" prop="nickname">
-          <el-input v-model="userForm.nickname" placeholder="请输入昵称" />
-        </el-form-item>
-        <el-form-item label="邮箱" prop="email">
-          <el-input v-model="userForm.email" placeholder="请输入邮箱" />
-        </el-form-item>
-        <el-form-item label="手机号" prop="phone">
-          <el-input v-model="userForm.phone" placeholder="请输入手机号" />
-        </el-form-item>
-        <el-form-item label="状态" prop="status">
-          <el-radio-group v-model="userForm.status">
-            <el-radio :value="1">正常</el-radio>
-            <el-radio :value="0">禁用</el-radio>
-          </el-radio-group>
         </el-form-item>
       </el-form>
 
@@ -160,19 +259,32 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from "vue";
 import { ElMessage, ElMessageBox, type FormInstance } from "element-plus";
-import { Search, Plus, Refresh } from "@element-plus/icons-vue";
+import {
+  Search,
+  Plus,
+  Refresh,
+  User as UserIcon,
+} from "@element-plus/icons-vue";
 import {
   userApi,
   type User,
   type CreateUserDto,
   type UpdateUserDto,
 } from "../api/user";
+import { departmentApi, type Department } from "../api/department";
+import { roleApi, type Role } from "../api/role";
 
 // ==================== 响应式数据 ====================
 const loading = ref(false);
 const submitLoading = ref(false);
 const userList = ref<User[]>([]);
-const searchQuery = ref("");
+const departmentList = ref<Department[]>([]);
+const roleList = ref<Role[]>([]);
+const searchQuery = reactive({
+  username: "",
+  account: "",
+  departmentId: null as number | null,
+});
 const dialogVisible = ref(false);
 const dialogMode = ref<"create" | "edit" | "view">("create");
 const formRef = ref<FormInstance>();
@@ -183,13 +295,24 @@ const pagination = reactive({
   total: 0,
 });
 
-const userForm = reactive<CreateUserDto & { id?: number; status?: number }>({
+const userForm = reactive<
+  CreateUserDto & {
+    id?: number;
+    sex?: number | null;
+    roleId?: number | null;
+    departmentId?: number | null;
+  }
+>({
   username: "",
   password: "",
-  nickname: "",
+  account: "",
   email: "",
-  phone: "",
-  status: 1,
+  nickname: "",
+  mobile: "",
+  sex: null,
+  roleId: null,
+  departmentId: null,
+  remark: "",
 });
 
 // ==================== 计算属性 ====================
@@ -212,20 +335,29 @@ const formRules = {
     { required: true, message: "请输入用户名", trigger: "blur" },
     {
       min: 2,
-      max: 20,
-      message: "用户名长度在 2 到 20 个字符",
+      max: 50,
+      message: "用户名长度在 2 到 50 个字符",
       trigger: "blur",
     },
   ],
   password: [
     { required: true, message: "请输入密码", trigger: "blur" },
-    { min: 6, max: 20, message: "密码长度在 6 到 20 个字符", trigger: "blur" },
+    {
+      min: 6,
+      max: 100,
+      message: "密码长度在 6 到 100 个字符",
+      trigger: "blur",
+    },
+  ],
+  account: [
+    { required: true, message: "请输入账号", trigger: "blur" },
+    { max: 100, message: "账号长度不能超过 100 个字符", trigger: "blur" },
   ],
   nickname: [
-    { max: 50, message: "昵称长度不能超过 50 个字符", trigger: "blur" },
+    { max: 30, message: "昵称长度不能超过 30 个字符", trigger: "blur" },
   ],
   email: [{ type: "email", message: "请输入正确的邮箱格式", trigger: "blur" }],
-  phone: [
+  mobile: [
     {
       pattern: /^1[3-9]\d{9}$/,
       message: "请输入正确的手机号格式",
@@ -237,6 +369,8 @@ const formRules = {
 // ==================== 生命周期 ====================
 onMounted(() => {
   loadUserList();
+  loadDepartments();
+  loadRoles();
 });
 
 // ==================== 方法定义 ====================
@@ -250,17 +384,56 @@ const loadUserList = async () => {
     const response = await userApi.getUsers({
       page: pagination.page,
       limit: pagination.limit,
-      search: searchQuery.value || undefined,
+      username: searchQuery.username || undefined,
+      account: searchQuery.account || undefined,
+      departmentId: searchQuery.departmentId || undefined,
     });
 
-    if (response.data) {
-      userList.value = response.data.data;
-      pagination.total = response.data.meta.total;
+    // 修正: 使用正确的常量和数据结构
+    if (response.code === 200) {
+      userList.value = response.data.list || [];
+      pagination.total = response.data.total || 0;
     }
   } catch (error: any) {
-    ElMessage.error(error.message || "加载用户列表失败");
+    ElMessage.error(
+      error.response?.data?.message || error.message || "加载用户列表失败"
+    );
   } finally {
     loading.value = false;
+  }
+};
+
+/**
+ * 加载部门列表
+ */
+const loadDepartments = async () => {
+  try {
+    const response = await departmentApi.getAllDepartments();
+    if (response.data) {
+      departmentList.value = response.data;
+    }
+  } catch (error: any) {
+    console.error(
+      "加载部门列表失败:",
+      error.response?.data?.message || error.message
+    );
+  }
+};
+
+/**
+ * 加载角色列表
+ */
+const loadRoles = async () => {
+  try {
+    const response = await roleApi.getAllRoles();
+    if (response.data) {
+      roleList.value = response.data;
+    }
+  } catch (error: any) {
+    console.error(
+      "加载角色列表失败:",
+      error.response?.data?.message || error.message
+    );
   }
 };
 
@@ -311,7 +484,12 @@ const handleCreate = () => {
 const handleView = (user: User) => {
   dialogMode.value = "view";
   dialogVisible.value = true;
-  Object.assign(userForm, user);
+  Object.assign(userForm, {
+    ...user,
+    sex: user.sex || null,
+    roleId: user.roleId || null,
+    departmentId: user.departmentId || null,
+  });
 };
 
 /**
@@ -320,7 +498,12 @@ const handleView = (user: User) => {
 const handleEdit = (user: User) => {
   dialogMode.value = "edit";
   dialogVisible.value = true;
-  Object.assign(userForm, user);
+  Object.assign(userForm, {
+    ...user,
+    sex: user.sex || null,
+    roleId: user.roleId || null,
+    departmentId: user.departmentId || null,
+  });
 };
 
 /**
@@ -343,22 +526,10 @@ const handleDelete = async (user: User) => {
     loadUserList();
   } catch (error: any) {
     if (error !== "cancel") {
-      ElMessage.error(error.message || "删除失败");
+      ElMessage.error(
+        error.response?.data?.message || error.message || "删除失败"
+      );
     }
-  }
-};
-
-/**
- * 处理切换用户状态
- */
-const handleToggleStatus = async (user: User) => {
-  try {
-    const newStatus = user.status === 1 ? 0 : 1;
-    await userApi.updateUser(user.id, { status: newStatus });
-    ElMessage.success(`${newStatus === 1 ? "启用" : "禁用"}成功`);
-    loadUserList();
-  } catch (error: any) {
-    ElMessage.error(error.message || "操作失败");
   }
 };
 
@@ -384,7 +555,9 @@ const handleSubmit = async () => {
     dialogVisible.value = false;
     loadUserList();
   } catch (error: any) {
-    ElMessage.error(error.message || "操作失败");
+    ElMessage.error(
+      error.response?.data?.message || error.message || "操作失败"
+    );
   } finally {
     submitLoading.value = false;
   }
@@ -397,10 +570,14 @@ const resetForm = () => {
   Object.assign(userForm, {
     username: "",
     password: "",
-    nickname: "",
+    account: "",
     email: "",
-    phone: "",
-    status: 1,
+    nickname: "",
+    mobile: "",
+    sex: null,
+    roleId: null,
+    departmentId: null,
+    remark: "",
   });
   formRef.value?.clearValidate();
 };
@@ -446,7 +623,8 @@ const formatDate = (dateString: string) => {
 }
 
 .search-box {
-  flex: 1;
+  display: flex;
+  align-items: center;
 }
 
 .action-buttons {

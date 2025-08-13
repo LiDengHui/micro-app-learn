@@ -1,62 +1,39 @@
-import axios from "axios";
+import { createApiClient } from "@micro-frontend/shared-utils";
 
-const API_BASE_URL = "http://localhost:9000";
+// 创建 API 客户端
+const api = createApiClient();
 
-// 创建 axios 实例
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: 10000,
-  withCredentials: true,
-});
-
-// 请求拦截器 - 添加 token
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-// 后端统一响应格式
-export interface ApiResponse<T> {
+// nest-serve 的响应格式
+export interface NestApiResponse<T = any> {
   code: number;
-  data: T | null;
-  errorMessage: string | null;
-  timestamp: string;
-  path?: string;
+  message: string;
+  data: T;
+  timestamp: number;
 }
 
-// 响应拦截器
-api.interceptors.response.use(
-  (response) => {
-    // 检查业务状态码
-    const data = response.data;
-    if (data.code !== 0) {
-      throw new Error(data.errorMessage || "请求失败");
-    }
-    return data;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-// 用户相关类型定义
+// 用户相关类型定义 - 根据 nest-serve 的 User 实体
 export interface User {
   id: number;
   username: string;
   nickname?: string;
   email?: string;
-  phone?: string;
-  status: number;
-  roleId?: number;
+  mobile?: string;
+  sex?: number;
+  avatar?: string;
+  login_ip?: string;
+  login_date?: string;
+  remark?: string;
+  dept_id?: number;
   departmentId?: number;
+  roleId?: number;
+  department?: {
+    id: number;
+    name: string;
+  };
+  role?: {
+    id: number;
+    name: string;
+  };
   createdAt: string;
   updatedAt: string;
 }
@@ -64,78 +41,75 @@ export interface User {
 export interface CreateUserDto {
   username: string;
   password: string;
-  nickname?: string;
+  account: string;
   email?: string;
-  phone?: string;
-  roleId?: number;
-  departmentId?: number;
+  nickname?: string;
+  mobile?: string;
+  sex?: number | null;
+  roleId?: number | null;
+  departmentId?: number | null;
+  remark?: string;
 }
 
 export interface UpdateUserDto {
-  nickname?: string;
+  username?: string;
+  password?: string;
+  account?: string;
   email?: string;
-  phone?: string;
-  status?: number;
-  roleId?: number;
-  departmentId?: number;
+  nickname?: string;
+  mobile?: string;
+  sex?: number | null;
+  roleId?: number | null;
+  departmentId?: number | null;
+  remark?: string;
 }
 
 export interface UserListQuery {
   page?: number;
   limit?: number;
-  search?: string;
-  status?: number;
-  roleId?: number;
-  departmentId?: number;
+  username?: string;
+  account?: string;
+  departmentId?: number | null;
 }
 
 export interface UserListData {
-  data: User[];
-  meta: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
+  list: User[];
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
 }
 
-export interface UserListResponse extends ApiResponse<UserListData> {}
+export interface UserListResponse extends NestApiResponse<UserListData> {}
 
-// 用户 API
+// 用户 API - 根据 nest-serve 的实际接口路径
 export const userApi = {
   // 获取用户列表
   getUsers: (query: UserListQuery = {}): Promise<UserListResponse> => {
-    return api.get("/system/user", { params: query });
+    return api.get("/admin/users", { params: query });
   },
 
   // 获取用户详情
-  getUser: (id: number): Promise<ApiResponse<User>> => {
-    return api.get(`/system/user/${id}`);
+  getUser: (id: number): Promise<NestApiResponse<User>> => {
+    return api.get(`/admin/users/${id}`);
   },
 
   // 创建用户
-  createUser: (data: CreateUserDto): Promise<ApiResponse<User>> => {
-    return api.post("/system/user", data);
+  createUser: (data: CreateUserDto): Promise<NestApiResponse<User>> => {
+    return api.post("/admin/users", data);
   },
 
   // 更新用户
-  updateUser: (id: number, data: UpdateUserDto): Promise<ApiResponse<User>> => {
-    return api.patch(`/system/user/${id}`, data);
+  updateUser: (
+    id: number,
+    data: UpdateUserDto
+  ): Promise<NestApiResponse<User>> => {
+    return api.put(`/admin/users/${id}`, data);
   },
 
   // 删除用户
-  deleteUser: (id: number): Promise<ApiResponse<void>> => {
-    return api.delete(`/system/user/${id}`);
-  },
-
-  // 重置密码
-  resetPassword: (
-    id: number,
-    newPassword: string
-  ): Promise<ApiResponse<void>> => {
-    return api.patch(`/system/user/${id}/reset-password`, {
-      password: newPassword,
-    });
+  deleteUser: (id: number): Promise<NestApiResponse<void>> => {
+    return api.delete(`/admin/users/${id}`);
   },
 };
 

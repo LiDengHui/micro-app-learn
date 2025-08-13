@@ -300,32 +300,6 @@ export const createDefaultApi = (
   return createApiInstance({}, callbacks, filterOptions);
 };
 
-// 导出默认配置的API实例
-export const createDefaultApi = (
-  callbacks?: InterceptorCallbacks,
-  filterOptions?: {
-    keepZero?: boolean;
-    keepEmptyArray?: boolean;
-    keepEmptyObject?: boolean;
-  }
-): AxiosInstance => {
-  return createApiInstance({}, callbacks, filterOptions);
-};
-
-->
-
-// 导出默认配置的API实例
-export const createDefaultApi = (
-  callbacks?: InterceptorCallbacks,
-  filterOptions?: {
-    keepZero?: boolean;
-    keepEmptyArray?: boolean;
-    keepEmptyObject?: boolean;
-  }
-): AxiosInstance => {
-  return createApiInstance({}, callbacks, filterOptions);
-};
-
 // 创建新的API对象，提供get、post等方法，返回泛型T和response.data
 export const createApiClient = <T = any>(
   customConfig?: Partial<RequestConfig>,
@@ -336,7 +310,11 @@ export const createApiClient = <T = any>(
     keepEmptyObject?: boolean;
   }
 ) => {
-  const axiosInstance = createApiInstance(customConfig, callbacks, filterOptions);
+  const axiosInstance = createApiInstance(
+    customConfig,
+    callbacks,
+    filterOptions
+  );
 
   return {
     get: async <R = T>(url: string, config?: any): Promise<R> => {

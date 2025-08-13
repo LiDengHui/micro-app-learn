@@ -32,10 +32,8 @@ export interface SubAppListResponse {
   code: number;
   message: string;
   data: {
-    items: SubAppInfo[];
+    list: SubAppInfo[];
     total: number;
-    page: number;
-    limit: number;
   };
   timestamp?: number;
 }
@@ -65,7 +63,7 @@ export interface QueryParams {
   page?: number;
   limit?: number;
   name?: string;
-  status?: string;
+  appStatus?: string;
 }
 
 /**
@@ -98,10 +96,8 @@ export interface SubAppVersionListResponse {
   code: number;
   message: string;
   data: {
-    items: SubAppVersion[];
+    list: SubAppVersion[];
     total: number;
-    page: number;
-    limit: number;
   };
   timestamp?: number;
 }
@@ -156,7 +152,7 @@ export const getSubAppList = async (
       page: params.page,
       limit: params.limit,
       name: params.name,
-      status: params.status,
+      appStatus: params.appStatus,
     },
   });
   return response;
@@ -270,7 +266,7 @@ export const getSubAppVersions = async (
       isCurrentVersion: params.isCurrentVersion,
     },
   });
-  return response.data;
+  return response;
 };
 
 /**
