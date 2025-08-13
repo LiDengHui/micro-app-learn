@@ -15,12 +15,26 @@ export interface NestApiResponse<T = any> {
 export interface Role {
   id: number;
   name: string;
-  code?: string;
-  sort?: number;
-  status?: number;
+  role?: string;
   remark?: string;
+  status?: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface CreateRoleDto {
+  name: string;
+  role?: string;
+  remark?: string;
+  status: boolean;
+}
+
+export interface UpdateRoleDto {
+  id?: number;
+  name: string;
+  role?: string;
+  remark?: string;
+  status: boolean;
 }
 
 export interface RoleListQuery {
@@ -49,6 +63,34 @@ export const roleApi = {
   // 获取所有角色（用于下拉选择）
   getAllRoles: (): Promise<NestApiResponse<Role[]>> => {
     return api.get("/admin/roles", { params: { limit: 1000 } });
+  },
+
+  // 获取单个角色
+  getRole: (id: number): Promise<NestApiResponse<Role>> => {
+    return api.get(`/admin/roles/${id}`);
+  },
+
+  // 创建角色
+  createRole: (data: CreateRoleDto): Promise<NestApiResponse<Role>> => {
+    return api.post("/admin/roles", data);
+  },
+
+  // 更新角色
+  updateRole: (
+    id: number,
+    data: UpdateRoleDto
+  ): Promise<NestApiResponse<Role>> => {
+    return api.put(`/admin/roles/${id}`, data);
+  },
+
+  // 删除角色
+  deleteRole: (id: number): Promise<NestApiResponse<void>> => {
+    return api.delete(`/admin/roles/${id}`);
+  },
+
+  // 批量删除角色
+  batchDeleteRoles: (ids: number[]): Promise<NestApiResponse<void>> => {
+    return api.post("/admin/roles/delete", { ids });
   },
 };
 

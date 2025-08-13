@@ -24,6 +24,16 @@ const routes: RouteRecordRaw[] = [
     component: () => import("../views/UserManagement.vue"),
   },
   {
+    path: "/role-management",
+    name: "RoleManagement",
+    component: () => import("../views/RoleManagement.vue"),
+  },
+  {
+    path: "/department-management",
+    name: "DepartmentManagement",
+    component: () => import("../views/DepartmentManagement.vue"),
+  },
+  {
     path: "/sub-app-management",
     name: "SubAppManagement",
     component: () => import("../views/SubAppManagement.vue"),

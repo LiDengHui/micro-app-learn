@@ -16,19 +16,41 @@ export interface Department {
   id: number;
   name: string;
   parentId?: number;
-  orderNum?: number;
-  leader?: string;
+  parent?: Department;
+  children?: Department[];
+  leader_user_id?: number;
+  leader?: any;
   phone?: string;
   email?: string;
-  status?: number;
+  status?: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface CreateDepartmentDto {
+  name: string;
+  parentId?: number;
+  leader_user_id?: number;
+  phone?: string;
+  email?: string;
+  status: boolean;
+}
+
+export interface UpdateDepartmentDto {
+  id?: number;
+  name: string;
+  parentId?: number;
+  leader_user_id?: number;
+  phone?: string;
+  email?: string;
+  status: boolean;
 }
 
 export interface DepartmentListQuery {
   page?: number;
   limit?: number;
   name?: string;
+  status?: number;
 }
 
 export interface DepartmentListData {
@@ -44,7 +66,7 @@ export interface DepartmentListResponse
 
 // 部门 API
 export const departmentApi = {
-  // 获取部门列表
+  // 获取部门列表（树形结构）
   getDepartments: (
     query: DepartmentListQuery = {}
   ): Promise<DepartmentListResponse> => {
@@ -54,6 +76,25 @@ export const departmentApi = {
   // 获取所有部门（用于下拉选择）
   getAllDepartments: (): Promise<NestApiResponse<Department[]>> => {
     return api.get("/department", { params: { limit: 1000 } });
+  },
+
+  // 创建部门
+  createDepartment: (
+    data: CreateDepartmentDto
+  ): Promise<NestApiResponse<Department>> => {
+    return api.post("/department/save", data);
+  },
+
+  // 更新部门
+  updateDepartment: (
+    data: UpdateDepartmentDto
+  ): Promise<NestApiResponse<Department>> => {
+    return api.post("/department/save", data);
+  },
+
+  // 删除部门
+  deleteDepartment: (ids: number[]): Promise<NestApiResponse<void>> => {
+    return api.post("/department/delete", { ids });
   },
 };
 
