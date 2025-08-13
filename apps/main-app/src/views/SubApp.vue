@@ -207,19 +207,6 @@ onUnmounted(() => {
   border: 2px solid #28a745;
 }
 
-#micro-content::before {
-  content: "主应用容器 - 为子应用提供空间";
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  background: #28a745;
-  color: white;
-  padding: 5px 10px;
-  border-radius: 4px;
-  font-size: 12px;
-  z-index: 1000;
-}
-
 micro-app {
   height: 100%;
   width: 100%;
