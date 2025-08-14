@@ -17,7 +17,7 @@ export function microConfigPlugin(options = {}) {
                     return;
                 }
                 const packageJson = JSON.parse(readFileSync(packagePath, "utf-8"));
-                const { name, version } = packageJson;
+                const { name, version, description } = packageJson;
                 // 读取 micro.config.json
                 if (!existsSync(microConfigPath)) {
                     console.warn(`[vite-plugin-micro-config] micro.config.json not found at: ${microConfigPath}`);
@@ -28,6 +28,7 @@ export function microConfigPlugin(options = {}) {
                 const mergedConfig = {
                     name,
                     version,
+                    description,
                     // 添加构建信息
                     buildInfo: {
                         buildTime: new Date().toISOString(),

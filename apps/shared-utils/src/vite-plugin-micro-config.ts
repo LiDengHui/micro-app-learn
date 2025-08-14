@@ -50,7 +50,7 @@ export function microConfigPlugin(
         }
 
         const packageJson = JSON.parse(readFileSync(packagePath, "utf-8"));
-        const { name, version } = packageJson;
+        const { name, version, description } = packageJson;
 
         // 读取 micro.config.json
         if (!existsSync(microConfigPath)) {
@@ -66,6 +66,7 @@ export function microConfigPlugin(
         const mergedConfig = {
           name,
           version,
+          description,
           // 添加构建信息
           buildInfo: {
             buildTime: new Date().toISOString(),

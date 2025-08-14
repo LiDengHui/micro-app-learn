@@ -2,6 +2,7 @@
   "name": "sub-app-vue",
   "private": true,
   "version": "1.1.2",
+  "description": "Vue管理面板稳定版1",
   "type": "module",
   "scripts": {
     "dev": "vite",
