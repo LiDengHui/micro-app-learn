@@ -71,7 +71,7 @@ export interface MenuListQuery {
   page?: number;
   limit?: number;
   name?: string;
-  status?: number | null;
+  status?: boolean | null;
 }
 
 export interface MenuListData {
@@ -108,7 +108,9 @@ export const menuApi = {
 
   // 删除菜单
   deleteMenu: (id: number): Promise<NestApiResponse<void>> => {
-    return api.post("/menu/delete", { ids: [id] });
+    // 确保 ids 是数组格式
+    const data = { ids: [id] };
+    return api.post("/menu/delete", data);
   },
 };
 

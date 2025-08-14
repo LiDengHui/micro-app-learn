@@ -28,8 +28,35 @@ const filterEmptyParams = (params) => {
     // 使用omitEmpty过滤空值
     return omitEmpty(params);
 };
-// 高级参数过滤函数，提供更细粒度的控制
+// 过滤参数中的无效值
 const filterParamsAdvanced = (params, options) => {
+    // 如果 params 是数组，先过滤无效值，然后对每一项进行递归处理
+    if (Array.isArray(params)) {
+        return params
+            .filter((item) => {
+            // 过滤 null 和 undefined
+            if (item === null || item === undefined) {
+                return false;
+            }
+            // 过滤空字符串
+            if (item === "") {
+                return false;
+            }
+            // 根据选项决定是否保留0值
+            if (item === 0 && !options?.keepZero) {
+                return false;
+            }
+            return true;
+        })
+            .map((item) => {
+            // 对数组中的每一项进行递归处理
+            if (typeof item === "object" && item !== null) {
+                return filterParamsAdvanced(item, options);
+            }
+            return item;
+        });
+    }
+    // 如果不是对象，直接返回
     if (!params || typeof params !== "object") {
         return params;
     }
@@ -67,7 +94,7 @@ const filterParamsAdvanced = (params, options) => {
             delete filtered[key];
             return;
         }
-        // 递归处理嵌套对象
+        // 递归处理嵌套对象和数组
         if (typeof value === "object" && value !== null) {
             filtered[key] = filterParamsAdvanced(value, options);
         }
@@ -86,7 +113,7 @@ export const createRequestInterceptor = (filterOptions) => {
             config.params = filterParamsAdvanced(config.params, filterOptions);
         }
         // 过滤请求体中的空值
-        if (config.data && typeof config.data === "object") {
+        if (config.data) {
             config.data = filterParamsAdvanced(config.data, filterOptions);
         }
         return config;

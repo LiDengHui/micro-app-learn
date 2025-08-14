@@ -26,8 +26,8 @@
           clearable
           @change="handleSearch"
         >
-          <el-option label="启用" :value="1" />
-          <el-option label="禁用" :value="0" />
+          <el-option label="启用" :value="true" />
+          <el-option label="禁用" :value="false" />
         </el-select>
       </div>
       <div class="action-buttons">
@@ -97,27 +97,34 @@
         </el-table-column>
         <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
-            <TableActionButtons :max-visible="1">
-              <el-button size="small" type="info" link @click="handleView(row)">
-                查看
-              </el-button>
-              <el-button
-                size="small"
-                type="primary"
-                link
-                @click="handleEdit(row)"
-              >
-                编辑
-              </el-button>
-              <el-button
-                size="small"
-                type="danger"
-                link
-                @click="handleDelete(row)"
-              >
-                删除
-              </el-button>
-            </TableActionButtons>
+            <div class="action-column">
+              <TableActionButtons :max-visible="1">
+                <el-button
+                  size="small"
+                  type="info"
+                  link
+                  @click="handleView(row)"
+                >
+                  查看
+                </el-button>
+                <el-button
+                  size="small"
+                  type="primary"
+                  link
+                  @click="handleEdit(row)"
+                >
+                  编辑
+                </el-button>
+                <el-button
+                  size="small"
+                  type="danger"
+                  link
+                  @click="handleDelete(row)"
+                >
+                  删除
+                </el-button>
+              </TableActionButtons>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -347,7 +354,7 @@ const menuTreeData = ref<Menu[]>([]);
 // 搜索参数
 const searchQuery = reactive({
   name: "",
-  status: null as number | null,
+  status: null as boolean | null,
 });
 
 // 分页参数
@@ -422,7 +429,8 @@ const loadMenuList = async () => {
     loading.value = true;
     const response = await menuApi.getMenus({
       ...searchQuery,
-      ...pagination,
+      page: pagination.page,
+      limit: pagination.limit,
     });
     if (response.data) {
       menuList.value = response.data.list || [];
@@ -710,5 +718,11 @@ const formatDate = (dateString: string) => {
   border: 1px solid #ebeef5;
   border-radius: 4px;
   background-color: #fafafa;
+}
+
+.action-column {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
 }
 </style>
