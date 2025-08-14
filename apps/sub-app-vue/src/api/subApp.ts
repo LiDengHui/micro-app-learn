@@ -307,14 +307,14 @@ export const getSubAppVersionDetail = async (
 };
 
 /**
- * 回滚到指定版本
+ * 部署指定版本
  */
-export const rollbackToVersion = async (
+export const deployVersion = async (
   subAppId: string,
   versionId: string
 ): Promise<{ code: number; message: string; data: SubAppInfo }> => {
   const response = await api.post(
-    `/subapps/${subAppId}/versions/${versionId}/rollback`
+    `/subapps/${subAppId}/versions/${versionId}/deploy`
   );
   return response;
 };

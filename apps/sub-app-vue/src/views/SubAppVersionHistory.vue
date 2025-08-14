@@ -157,9 +157,9 @@
                   v-if="!row.isCurrentVersion && row.status !== 'deprecated'"
                   size="small"
                   type="success"
-                  @click="handleRollback(row)"
+                  @click="handleDeploy(row)"
                 >
-                  回滚到此版本
+                  部署此版本
                 </el-button>
                 <el-button
                   v-if="!row.isCurrentVersion"
@@ -333,7 +333,7 @@ import {
   getSubAppDetail,
   getSubAppVersions,
   getSubAppVersionDetail,
-  rollbackToVersion,
+  deployVersion,
   deleteSubAppVersion,
   updateVersionStatus,
   type SubAppInfo,
@@ -496,13 +496,13 @@ const handleViewVersionDetail = async (row: SubAppVersion) => {
 };
 
 /**
- * 回滚到指定版本
+ * 部署指定版本
  */
-const handleRollback = async (row: SubAppVersion) => {
+const handleDeploy = async (row: SubAppVersion) => {
   try {
     await ElMessageBox.confirm(
-      `确定要回滚到版本 "${row.version}" 吗？此操作将替换当前版本。`,
-      "确认回滚",
+      `确定要部署版本 "${row.version}" 吗？此操作将替换当前版本。`,
+      "确认部署",
       {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
@@ -511,17 +511,17 @@ const handleRollback = async (row: SubAppVersion) => {
     );
 
     const subAppId = route.params.subAppId as string;
-    const response = await rollbackToVersion(subAppId, row.id.toString());
+    const response = await deployVersion(subAppId, row.id.toString());
     if (response.code === 200) {
-      ElMessage.success("回滚成功");
+      ElMessage.success("部署成功");
       loadVersionList(); // 刷新列表
     } else {
-      ElMessage.error(response.message || "回滚失败");
+      ElMessage.error(response.message || "部署失败");
     }
   } catch (error) {
     if (error !== "cancel") {
-      console.error("回滚失败:", error);
-      ElMessage.error("回滚失败");
+      console.error("部署失败:", error);
+      ElMessage.error("部署失败");
     }
   }
 };
