@@ -561,6 +561,8 @@ const handleUserCommand = async (command: string) => {
 #micro-content {
   height: 100%;
   width: 100%;
+  border: none;
+  outline: none;
 }
 
 .welcome-content {

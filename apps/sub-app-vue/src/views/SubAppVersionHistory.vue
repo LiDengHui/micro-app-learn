@@ -1,10 +1,10 @@
 <template>
-  <div class="sub-app-version-history">
+  <div class="list-page">
     <!-- 页面头部 -->
     <div class="page-header">
       <div class="header-left">
         <el-button @click="$router.back()" icon="ArrowLeft"> 返回 </el-button>
-        <h2 class="page-title">版本历史</h2>
+        <h1>版本历史</h1>
         <el-tag v-if="subAppInfo" type="info" size="large">
           {{ subAppInfo.name }}
         </el-tag>
@@ -649,9 +649,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.sub-app-version-history {
-  padding: 20px;
-}
+@import "../styles/common.scss";
 
 .page-header {
   display: flex;
@@ -666,13 +664,6 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 16px;
-}
-
-.page-title {
-  margin: 0;
-  font-size: 24px;
-  font-weight: 600;
-  color: #303133;
 }
 
 .header-actions {

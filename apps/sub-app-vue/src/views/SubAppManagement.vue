@@ -1,9 +1,9 @@
 <template>
-  <div class="sub-app-management">
+  <div class="list-page">
     <!-- 页面标题 -->
     <div class="page-header">
-      <h2 class="page-title">子应用管理</h2>
-      <p class="page-description">管理微前端子应用的部署和配置</p>
+      <h1>子应用管理</h1>
+      <p>管理微前端子应用的部署和配置</p>
     </div>
 
     <!-- 上传区域 -->
@@ -452,26 +452,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.sub-app-management {
-  padding: 20px;
-}
-
-.page-header {
-  margin-bottom: 24px;
-}
-
-.page-title {
-  margin: 0 0 8px 0;
-  font-size: 24px;
-  font-weight: 600;
-  color: #303133;
-}
-
-.page-description {
-  margin: 0;
-  color: #909399;
-  font-size: 14px;
-}
+@import "../styles/common.scss";
 
 .upload-card,
 .search-card,

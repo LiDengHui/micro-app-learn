@@ -1,9 +1,10 @@
 <template>
-  <div class="orders-page">
+  <div class="list-page">
     <el-card>
       <template #header>
         <div class="page-header">
-          <span>订单管理</span>
+          <h1>订单管理</h1>
+          <p>管理系统订单信息</p>
           <el-button type="primary" @click="$router.push('/')"
             >返回首页</el-button
           >
@@ -159,9 +160,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.orders-page {
-  background: #f5f5f5;
-}
+@import '../styles/common.scss';
 
 .page-header {
   display: flex;

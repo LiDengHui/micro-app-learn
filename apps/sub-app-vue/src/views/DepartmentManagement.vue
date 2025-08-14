@@ -1,5 +1,5 @@
 <template>
-  <div class="department-management">
+  <div class="list-page">
     <div class="page-header">
       <h1>部门管理</h1>
       <p>管理系统部门信息（树形结构）</p>
@@ -626,57 +626,5 @@ const formatDate = (dateString: string) => {
 </script>
 
 <style scoped>
-.department-management {
-  padding: 20px;
-}
-
-.page-header {
-  margin-bottom: 20px;
-}
-
-.page-header h1 {
-  margin: 0 0 8px 0;
-  font-size: 24px;
-  font-weight: 600;
-  color: #2c3e50;
-}
-
-.page-header p {
-  margin: 0;
-  color: #7f8c8d;
-  font-size: 14px;
-}
-
-.toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  padding: 16px;
-  background: #f8f9fa;
-  border-radius: 8px;
-}
-
-.search-box {
-  display: flex;
-  align-items: center;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 12px;
-}
-
-.table-container {
-  background: white;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-}
+@import "../styles/common.scss";
 </style>

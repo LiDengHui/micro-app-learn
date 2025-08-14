@@ -1,9 +1,10 @@
 <template>
-  <div class="users-page">
+  <div class="list-page">
     <el-card>
       <template #header>
         <div class="page-header">
-          <span>用户管理</span>
+          <h1>用户管理</h1>
+          <p>管理系统用户信息</p>
           <div class="header-actions">
             <el-button type="success" @click="addUser">添加用户</el-button>
             <el-button type="primary" @click="$router.push('/')"
@@ -194,9 +195,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.users-page {
-  background: #f5f5f5;
-}
+@import '../styles/common.scss';
 
 .page-header {
   display: flex;

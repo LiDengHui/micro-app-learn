@@ -204,12 +204,15 @@ onUnmounted(() => {
   height: 100%;
   width: 100%;
   position: relative;
-  border: 2px solid #28a745;
+  border: none;
+  outline: none;
 }
 
 micro-app {
   height: 100%;
   width: 100%;
+  border: none;
+  outline: none;
 }
 
 /* ==================== 错误状态样式 ==================== */
