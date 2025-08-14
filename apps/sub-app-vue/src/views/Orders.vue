@@ -1,20 +1,42 @@
 <template>
   <div class="list-page">
-    <el-card>
-      <template #header>
-        <div class="page-header">
-          <h1>订单管理</h1>
-          <p>管理系统订单信息</p>
-          <el-button type="primary" @click="$router.push('/')"
-            >返回首页</el-button
-          >
-        </div>
-      </template>
+    <div class="page-header">
+      <h1>订单管理</h1>
+      <p>管理系统订单信息</p>
+    </div>
 
-      <div class="orders-content">
-        <el-row :gutter="20">
-          <el-col :span="24">
-            <el-table :data="orders" style="width: 100%">
+    <!-- 搜索和操作栏 -->
+    <div class="toolbar">
+      <div class="search-box">
+        <el-input
+          v-model="searchQuery"
+          placeholder="搜索订单"
+          style="width: 200px; margin-right: 10px"
+          clearable
+          @input="handleSearch"
+        >
+          <template #prefix>
+            <el-icon><Search /></el-icon>
+          </template>
+        </el-input>
+      </div>
+      <div class="action-buttons">
+        <el-button type="primary" @click="$router.push('/')">
+          <el-icon><Back /></el-icon>
+          返回首页
+        </el-button>
+      </div>
+    </div>
+
+    <!-- 订单表格 -->
+    <div class="table-container">
+      <el-table
+        v-loading="loading"
+        :data="filteredOrders"
+        style="width: 100%"
+        border
+        stripe
+      >
               <el-table-column prop="id" label="订单ID" width="120" />
               <el-table-column prop="customer" label="客户名称" width="150" />
               <el-table-column prop="product" label="产品名称" />
@@ -28,42 +50,57 @@
                   </el-tag>
                 </template>
               </el-table-column>
-              <el-table-column prop="date" label="创建时间" width="180" />
-              <el-table-column label="操作" width="150">
-                <template #default="scope">
-                  <el-button size="small" @click="viewOrder(scope.row)"
-                    >查看</el-button
-                  >
-                  <el-button
-                    size="small"
-                    type="primary"
-                    @click="editOrder(scope.row)"
-                    >编辑</el-button
-                  >
-                </template>
-              </el-table-column>
-            </el-table>
-          </el-col>
-        </el-row>
+        <el-table-column type="index" label="序号" width="60" />
+        <el-table-column prop="id" label="订单ID" width="120" />
+        <el-table-column prop="customer" label="客户名称" width="150" />
+        <el-table-column prop="product" label="产品名称" min-width="200" />
+        <el-table-column prop="amount" label="金额" width="120">
+          <template #default="{ row }">
+            ¥{{ row.amount }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="status" label="状态" width="120">
+          <template #default="{ row }">
+            <el-tag :type="getStatusType(row.status)">
+              {{ row.status }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="date" label="创建时间" width="180" />
+        <el-table-column label="操作" width="200" fixed="right">
+          <template #default="{ row }">
+            <TableActionButtons :max-visible="1">
+              <el-button size="small" type="info" link @click="viewOrder(row)">
+                查看
+              </el-button>
+              <el-button size="small" type="primary" link @click="editOrder(row)">
+                编辑
+              </el-button>
+            </TableActionButtons>
+          </template>
+        </el-table-column>
+      </el-table>
+    </div>
 
-        <div class="pagination-wrapper">
-          <el-pagination
-            v-model:current-page="currentPage"
-            v-model:page-size="pageSize"
-            :page-sizes="[10, 20, 50, 100]"
-            :total="total"
-            layout="total, sizes, prev, pager, next, jumper"
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-          />
-        </div>
-      </div>
-    </el-card>
+    <!-- 分页 -->
+    <div class="pagination-container">
+      <el-pagination
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :page-sizes="[10, 20, 50, 100]"
+        :total="total"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
+import { Search, Back } from "@element-plus/icons-vue";
+import TableActionButtons from "../components/TableActionButtons.vue";
 
 interface Order {
   id: string;
@@ -74,11 +111,15 @@ interface Order {
   date: string;
 }
 
+// 响应式数据
+const loading = ref(false);
+const searchQuery = ref("");
 const orders = ref<Order[]>([]);
 const currentPage = ref(1);
 const pageSize = ref(10);
 const total = ref(0);
 
+// 模拟数据
 const mockOrders: Order[] = [
   {
     id: "ORD001",
@@ -122,6 +163,24 @@ const mockOrders: Order[] = [
   },
 ];
 
+// 计算属性
+const filteredOrders = computed(() => {
+  if (!searchQuery.value) {
+    return orders.value;
+  }
+  return orders.value.filter(
+    (order) =>
+      order.customer.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+      order.product.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+      order.id.toLowerCase().includes(searchQuery.value.toLowerCase())
+  );
+});
+
+// 方法
+const handleSearch = () => {
+  // 搜索逻辑已在计算属性中处理
+};
+
 const getStatusType = (status: string) => {
   switch (status) {
     case "已完成":
@@ -160,20 +219,5 @@ onMounted(() => {
 </script>
 
 <style scoped>
-@import '../styles/common.scss';
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.orders-content {
-  margin-top: 20px;
-}
-
-.pagination-wrapper {
-  margin-top: 20px;
-  text-align: center;
-}
+@import "../styles/common.scss";
 </style>

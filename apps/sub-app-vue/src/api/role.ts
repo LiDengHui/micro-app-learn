@@ -18,8 +18,35 @@ export interface Role {
   role?: string;
   remark?: string;
   status?: boolean;
+  menus?: Menu[];
+  permissions?: Permission[];
   createdAt: string;
   updatedAt: string;
+}
+
+// 菜单类型定义
+export interface Menu {
+  id: number;
+  name: string;
+  title: string;
+  path: string;
+  component: string;
+  type: number;
+  parentId?: number | null;
+  status: boolean;
+  meta?: {
+    icon?: string;
+    permission?: string[];
+  };
+  permissions?: Permission[];
+  children?: Menu[];
+}
+
+// 权限类型定义
+export interface Permission {
+  id: number;
+  label: string;
+  value: string;
 }
 
 export interface CreateRoleDto {
@@ -27,6 +54,7 @@ export interface CreateRoleDto {
   role?: string;
   remark?: string;
   status: boolean;
+  menu?: Menu[];
 }
 
 export interface UpdateRoleDto {
@@ -35,6 +63,7 @@ export interface UpdateRoleDto {
   role?: string;
   remark?: string;
   status: boolean;
+  menu?: Menu[];
 }
 
 export interface RoleListQuery {
@@ -91,6 +120,11 @@ export const roleApi = {
   // 批量删除角色
   batchDeleteRoles: (ids: number[]): Promise<NestApiResponse<void>> => {
     return api.post("/admin/roles/delete", { ids });
+  },
+
+  // 获取角色菜单
+  getRoleMenu: (): Promise<NestApiResponse<Menu[]>> => {
+    return api.get("/admin/roles/menu");
   },
 };
 

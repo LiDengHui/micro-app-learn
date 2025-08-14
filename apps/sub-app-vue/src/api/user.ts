@@ -23,6 +23,7 @@ export interface User {
   login_ip?: string;
   login_date?: string;
   remark?: string;
+  status?: boolean;
   dept_id?: number;
   departmentId?: number;
   roleId?: number;
@@ -48,6 +49,7 @@ export interface CreateUserDto {
   sex?: number | null;
   roleId?: number | null;
   departmentId?: number | null;
+  status?: boolean;
   remark?: string;
 }
 
@@ -61,6 +63,7 @@ export interface UpdateUserDto {
   sex?: number | null;
   roleId?: number | null;
   departmentId?: number | null;
+  status?: boolean;
   remark?: string;
 }
 
@@ -70,6 +73,7 @@ export interface UserListQuery {
   username?: string;
   account?: string;
   departmentId?: number | null;
+  status?: boolean;
 }
 
 export interface UserListData {

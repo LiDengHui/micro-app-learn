@@ -444,71 +444,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.sub-app-detail {
-  padding: 20px;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #e4e7ed;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.page-title {
-  margin: 0;
-  font-size: 24px;
-  font-weight: 600;
-  color: #303133;
-}
-
-.header-actions {
-  display: flex;
-  gap: 12px;
-}
-
-.loading-container,
-.error-container {
-  padding: 40px;
-  text-align: center;
-}
-
-.detail-container {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.info-card,
-.file-card,
-.config-card,
-.meta-card,
-.action-card {
-  margin-bottom: 0;
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.card-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #303133;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+@import "../styles/common.scss";
 
 .app-name {
   font-weight: 600;

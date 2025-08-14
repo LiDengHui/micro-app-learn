@@ -52,6 +52,14 @@
           </template>
         </el-table-column>
         <el-table-column prop="remark" label="备注" min-width="200" />
+        <el-table-column prop="menus" label="菜单权限" width="120">
+          <template #default="{ row }">
+            <el-tag v-if="row.menus && row.menus.length > 0" type="success">
+              {{ row.menus.length }} 个菜单
+            </el-tag>
+            <el-tag v-else type="info">无权限</el-tag>
+          </template>
+        </el-table-column>
         <el-table-column prop="createdAt" label="创建时间" width="180">
           <template #default="{ row }">
             {{ formatDate(row.createdAt) }}
@@ -64,13 +72,27 @@
         </el-table-column>
         <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
-            <el-button size="small" @click="handleView(row)">查看</el-button>
-            <el-button size="small" type="primary" @click="handleEdit(row)"
-              >编辑</el-button
-            >
-            <el-button size="small" type="danger" @click="handleDelete(row)"
-              >删除</el-button
-            >
+            <TableActionButtons :max-visible="1">
+              <el-button size="small" type="info" link @click="handleView(row)">
+                查看
+              </el-button>
+              <el-button
+                size="small"
+                type="primary"
+                link
+                @click="handleEdit(row)"
+              >
+                编辑
+              </el-button>
+              <el-button
+                size="small"
+                type="danger"
+                link
+                @click="handleDelete(row)"
+              >
+                删除
+              </el-button>
+            </TableActionButtons>
           </template>
         </el-table-column>
       </el-table>
@@ -89,93 +111,41 @@
       />
     </div>
 
-    <!-- 角色表单对话框 -->
-    <el-dialog
-      v-model="dialogVisible"
-      :title="dialogTitle"
-      width="600px"
-      @close="resetForm"
-    >
-      <el-form
-        ref="formRef"
-        :model="roleForm"
-        :rules="formRules"
-        label-width="100px"
-      >
-        <el-form-item label="角色名称" prop="name">
-          <el-input
-            v-model="roleForm.name"
-            placeholder="请输入角色名称"
-            :disabled="dialogMode === 'view'"
-          />
-        </el-form-item>
-
-        <el-form-item label="角色标识" prop="role">
-          <el-input
-            v-model="roleForm.role"
-            placeholder="请输入角色标识"
-            :disabled="dialogMode === 'view'"
-          />
-        </el-form-item>
-
-        <el-form-item label="状态" prop="status">
-          <el-switch
-            v-model="roleForm.status"
-            :disabled="dialogMode === 'view'"
-            active-text="启用"
-            inactive-text="禁用"
-          />
-        </el-form-item>
-
-        <el-form-item label="备注" prop="remark">
-          <el-input
-            v-model="roleForm.remark"
-            type="textarea"
-            :rows="3"
-            placeholder="请输入备注信息"
-            :disabled="dialogMode === 'view'"
-          />
-        </el-form-item>
-      </el-form>
-
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="dialogVisible = false">取消</el-button>
-          <el-button
-            type="primary"
-            :loading="submitLoading"
-            @click="handleSubmit"
-            v-if="dialogMode !== 'view'"
-          >
-            {{ dialogMode === "create" ? "创建" : "更新" }}
-          </el-button>
-        </span>
-      </template>
-    </el-dialog>
+    <!-- 角色编辑对话框 -->
+    <RoleEditDialog
+      v-model:visible="dialogVisible"
+      :mode="dialogMode"
+      :role-data="currentRole"
+      :menu-list="menuList"
+      @submit="handleRoleSubmit"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from "vue";
-import { ElMessage, ElMessageBox, type FormInstance } from "element-plus";
+import { ref, reactive, onMounted } from "vue";
+import { ElMessage, ElMessageBox } from "element-plus";
 import { Search, Plus, Refresh } from "@element-plus/icons-vue";
+import TableActionButtons from "../components/TableActionButtons.vue";
+import RoleEditDialog from "../components/RoleEditDialog.vue";
 import {
   roleApi,
   type Role,
   type CreateRoleDto,
   type UpdateRoleDto,
+  type Menu,
 } from "../api/role";
 
 // ==================== 响应式数据 ====================
 const loading = ref(false);
-const submitLoading = ref(false);
 const roleList = ref<Role[]>([]);
+const menuList = ref<Menu[]>([]);
 const searchQuery = reactive({
   name: "",
 });
 const dialogVisible = ref(false);
 const dialogMode = ref<"create" | "edit" | "view">("create");
-const formRef = ref<FormInstance>();
+const currentRole = ref<Role | undefined>(undefined);
 
 const pagination = reactive({
   page: 1,
@@ -183,49 +153,12 @@ const pagination = reactive({
   total: 0,
 });
 
-const roleForm = reactive<CreateRoleDto & { id?: number }>({
-  name: "",
-  role: "",
-  status: true,
-  remark: "",
-});
-
-// ==================== 计算属性 ====================
-const dialogTitle = computed(() => {
-  switch (dialogMode.value) {
-    case "create":
-      return "新增角色";
-    case "edit":
-      return "编辑角色";
-    case "view":
-      return "查看角色";
-    default:
-      return "角色信息";
-  }
-});
-
-// ==================== 表单验证规则 ====================
-const formRules = {
-  name: [
-    { required: true, message: "请输入角色名称", trigger: "blur" },
-    {
-      min: 2,
-      max: 50,
-      message: "角色名称长度在 2 到 50 个字符",
-      trigger: "blur",
-    },
-  ],
-  role: [
-    { max: 50, message: "角色标识长度不能超过 50 个字符", trigger: "blur" },
-  ],
-  remark: [
-    { max: 500, message: "备注长度不能超过 500 个字符", trigger: "blur" },
-  ],
-};
+// 角色表单数据已移至 RoleEditDialog 组件中
 
 // ==================== 生命周期 ====================
 onMounted(() => {
   loadRoleList();
+  loadMenuList();
 });
 
 // ==================== 方法定义 ====================
@@ -252,6 +185,20 @@ const loadRoleList = async () => {
     );
   } finally {
     loading.value = false;
+  }
+};
+
+/**
+ * 加载菜单列表
+ */
+const loadMenuList = async () => {
+  try {
+    const response = await roleApi.getRoleMenu();
+    if (response.code === 200) {
+      menuList.value = response.data || [];
+    }
+  } catch (error: any) {
+    console.error("加载菜单列表失败:", error);
   }
 };
 
@@ -292,8 +239,8 @@ const handleCurrentChange = (page: number) => {
  */
 const handleCreate = () => {
   dialogMode.value = "create";
+  currentRole.value = undefined;
   dialogVisible.value = true;
-  resetForm();
 };
 
 /**
@@ -301,10 +248,8 @@ const handleCreate = () => {
  */
 const handleView = (role: Role) => {
   dialogMode.value = "view";
+  currentRole.value = role;
   dialogVisible.value = true;
-  Object.assign(roleForm, {
-    ...role,
-  });
 };
 
 /**
@@ -312,10 +257,8 @@ const handleView = (role: Role) => {
  */
 const handleEdit = (role: Role) => {
   dialogMode.value = "edit";
+  currentRole.value = role;
   dialogVisible.value = true;
-  Object.assign(roleForm, {
-    ...role,
-  });
 };
 
 /**
@@ -346,21 +289,16 @@ const handleDelete = async (role: Role) => {
 };
 
 /**
- * 处理表单提交
+ * 处理角色表单提交
  */
-const handleSubmit = async () => {
-  if (!formRef.value) return;
-
+const handleRoleSubmit = async (formData: CreateRoleDto | UpdateRoleDto) => {
   try {
-    await formRef.value.validate();
-    submitLoading.value = true;
-
     if (dialogMode.value === "create") {
-      await roleApi.createRole(roleForm as CreateRoleDto);
+      await roleApi.createRole(formData as CreateRoleDto);
       ElMessage.success("创建成功");
     } else if (dialogMode.value === "edit") {
-      const { ...updateData } = roleForm;
-      await roleApi.updateRole(roleForm.id!, updateData as UpdateRoleDto);
+      const updateData = formData as UpdateRoleDto;
+      await roleApi.updateRole(currentRole.value!.id, updateData);
       ElMessage.success("更新成功");
     }
 
@@ -370,22 +308,7 @@ const handleSubmit = async () => {
     ElMessage.error(
       error.response?.data?.message || error.message || "操作失败"
     );
-  } finally {
-    submitLoading.value = false;
   }
-};
-
-/**
- * 重置表单
- */
-const resetForm = () => {
-  Object.assign(roleForm, {
-    name: "",
-    role: "",
-    status: true,
-    remark: "",
-  });
-  formRef.value?.clearValidate();
 };
 
 /**

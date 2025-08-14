@@ -62,7 +62,7 @@ import { useRoute, useRouter } from "vue-router";
 import { User, ArrowDown, Loading } from "@element-plus/icons-vue";
 import microApp from "@micro-zoe/micro-app";
 import { subApps } from "./config/subApps";
-import { buildMenuData, type MenuGroup } from "./config/menu";
+import { buildMenuData, debugMenuData, type MenuGroup } from "./config/menu";
 import MainMenu from "./components/MainMenu.vue";
 import { useNavigationStore } from "./stores/navigation";
 import { useAuthStore } from "./stores/auth";
@@ -115,6 +115,9 @@ const isLoginPage = computed(() => {
 });
 
 const menuData = ref<MenuGroup[]>(buildMenuData());
+
+// 调试：验证菜单数据
+debugMenuData();
 
 // ==================== 生命周期 ====================
 onMounted(async () => {

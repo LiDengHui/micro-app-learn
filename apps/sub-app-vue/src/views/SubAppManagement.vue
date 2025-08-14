@@ -150,29 +150,29 @@
           <template #default="{ row }">
             <TableActionButtons :max-visible="1">
               <el-button
-                type="primary"
                 size="small"
+                type="primary"
                 @click="handleViewDetail(row)"
               >
                 查看详情
               </el-button>
               <el-button
                 v-if="row.status === 'active'"
-                type="warning"
                 size="small"
+                type="warning"
                 @click="handleToggleStatus(row, 'inactive')"
               >
                 停用
               </el-button>
               <el-button
                 v-else
-                type="success"
                 size="small"
+                type="success"
                 @click="handleToggleStatus(row, 'active')"
               >
                 启用
               </el-button>
-              <el-button type="danger" size="small" @click="handleDelete(row)">
+              <el-button size="small" type="danger" @click="handleDelete(row)">
                 删除
               </el-button>
             </TableActionButtons>
@@ -454,27 +454,6 @@ onMounted(() => {
 <style scoped>
 @import "../styles/common.scss";
 
-.upload-card,
-.search-card,
-.list-card {
-  margin-bottom: 20px;
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.card-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #303133;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
 .upload-area {
   width: 100%;
 }
@@ -491,12 +470,6 @@ onMounted(() => {
 
 .app-icon {
   color: #409eff;
-}
-
-.pagination-wrapper {
-  margin-top: 20px;
-  display: flex;
-  justify-content: center;
 }
 
 :deep(.el-upload-dragger) {

@@ -25,6 +25,15 @@
           <el-icon><Plus /></el-icon>
           新增部门
         </el-button>
+        <el-button
+          type="danger"
+          :disabled="selectedRows.length === 0"
+          :loading="deleteLoading"
+          @click="handleBatchDelete"
+        >
+          <el-icon><Delete /></el-icon>
+          批量删除
+        </el-button>
         <el-button @click="refreshData">
           <el-icon><Refresh /></el-icon>
           刷新
@@ -43,8 +52,10 @@
         row-key="id"
         :tree-props="{ children: 'children' }"
         default-expand-all
+        @selection-change="handleSelectionChange"
       >
-        <el-table-column prop="id" label="ID" width="80" />
+        <el-table-column type="selection" width="55" />
+        <el-table-column type="index" label="序号" width="60" />
         <el-table-column prop="name" label="部门名称" min-width="200" />
         <el-table-column prop="parentId" label="上级部门" width="150">
           <template #default="{ row }">
@@ -65,26 +76,63 @@
             </el-tag>
           </template>
         </el-table-column>
+        <el-table-column prop="remark" label="备注" min-width="150">
+          <template #default="{ row }">
+            {{ row.remark || "-" }}
+          </template>
+        </el-table-column>
         <el-table-column prop="createdAt" label="创建时间" width="180">
           <template #default="{ row }">
             {{ formatDate(row.createdAt) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="250" fixed="right">
+        <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
-            <el-button size="small" @click="handleView(row)">查看</el-button>
-            <el-button size="small" type="primary" @click="handleEdit(row)"
-              >编辑</el-button
-            >
-            <el-button size="small" type="success" @click="handleAddChild(row)"
-              >添加子部门</el-button
-            >
-            <el-button size="small" type="danger" @click="handleDelete(row)"
-              >删除</el-button
-            >
+            <TableActionButtons :max-visible="1">
+              <el-button
+                size="small"
+                type="primary"
+                link
+                @click="handleEdit(row)"
+              >
+                编辑
+              </el-button>
+              <el-button
+                size="small"
+                type="success"
+                link
+                @click="handleAddChild(row)"
+              >
+                添加子部门
+              </el-button>
+              <el-button size="small" type="info" link @click="handleView(row)">
+                查看
+              </el-button>
+              <el-button
+                size="small"
+                type="danger"
+                link
+                @click="handleDelete(row)"
+              >
+                删除
+              </el-button>
+            </TableActionButtons>
           </template>
         </el-table-column>
       </el-table>
+    </div>
+
+    <!-- 分页 -->
+    <div class="pagination-container">
+      <el-pagination
+        v-model:current-page="pagination.page"
+        v-model:page-size="pagination.limit"
+        :total="pagination.total"
+        :page-sizes="[10, 20, 50, 100]"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
     </div>
 
     <!-- 部门表单对话框 -->
@@ -176,6 +224,16 @@
             </el-form-item>
           </el-col>
         </el-row>
+
+        <el-form-item label="备注" prop="remark">
+          <el-input
+            v-model="departmentForm.remark"
+            type="textarea"
+            :rows="3"
+            placeholder="请输入备注信息"
+            :disabled="dialogMode === 'view'"
+          />
+        </el-form-item>
       </el-form>
 
       <template #footer>
@@ -198,7 +256,8 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from "vue";
 import { ElMessage, ElMessageBox, type FormInstance } from "element-plus";
-import { Search, Plus, Refresh } from "@element-plus/icons-vue";
+import { Search, Plus, Refresh, Delete } from "@element-plus/icons-vue";
+import TableActionButtons from "../components/TableActionButtons.vue";
 import {
   departmentApi,
   type Department,
@@ -210,6 +269,7 @@ import { userApi, type User } from "../api/user";
 // ==================== 响应式数据 ====================
 const loading = ref(false);
 const submitLoading = ref(false);
+const deleteLoading = ref(false);
 const departmentList = ref<Department[]>([]);
 const departmentTreeData = ref<Department[]>([]);
 const userList = ref<User[]>([]);
@@ -220,14 +280,25 @@ const dialogVisible = ref(false);
 const dialogMode = ref<"create" | "edit" | "view" | "addChild">("create");
 const formRef = ref<FormInstance>();
 
-const departmentForm = reactive<CreateDepartmentDto & { id?: number }>({
+const departmentForm = reactive<
+  CreateDepartmentDto & { id?: number; remark?: string }
+>({
   name: "",
   parentId: undefined,
   leader_user_id: undefined,
   phone: "",
   email: "",
   status: true,
+  remark: "",
 });
+
+const pagination = reactive({
+  page: 1,
+  limit: 20,
+  total: 0,
+});
+
+const selectedRows = ref<Department[]>([]);
 
 // ==================== 计算属性 ====================
 const dialogTitle = computed(() => {
@@ -324,6 +395,8 @@ const loadDepartmentList = async () => {
   try {
     loading.value = true;
     const response = await departmentApi.getDepartments({
+      page: pagination.page,
+      limit: pagination.limit,
       name: searchQuery.name || undefined,
     });
 
@@ -335,6 +408,9 @@ const loadDepartmentList = async () => {
       // 构建树形数据用于选择器（扁平化处理）
       departmentTreeData.value = buildTreeData(flattenDepartments(departments));
       console.log("处理后的树形数据:", departmentList.value);
+
+      // 更新分页信息
+      pagination.total = response.data.total || 0;
 
       // 检查树形结构
       if (departments.length > 0) {
@@ -422,15 +498,6 @@ const buildTreeData = (departments: Department[]): Department[] => {
 const getParentName = (parentId?: number): string => {
   if (!parentId) return "顶级部门";
 
-  // 从原始部门数据中查找父部门名称
-  const findParentInFlatList = (
-    departments: Department[],
-    id: number
-  ): string => {
-    const parent = departments.find((dept) => dept.id === id);
-    return parent ? parent.name : "";
-  };
-
   // 从树形数据中查找父部门名称
   const findParentInTree = (departments: Department[], id: number): string => {
     for (const dept of departments) {
@@ -452,6 +519,31 @@ const getParentName = (parentId?: number): string => {
  * 处理搜索
  */
 const handleSearch = () => {
+  pagination.page = 1;
+  loadDepartmentList();
+};
+
+/**
+ * 处理表格选择变化
+ */
+const handleSelectionChange = (selection: Department[]) => {
+  selectedRows.value = selection;
+};
+
+/**
+ * 处理分页大小变化
+ */
+const handleSizeChange = (size: number) => {
+  pagination.limit = size;
+  pagination.page = 1;
+  loadDepartmentList();
+};
+
+/**
+ * 处理页码变化
+ */
+const handleCurrentChange = (page: number) => {
+  pagination.page = page;
   loadDepartmentList();
 };
 
@@ -548,6 +640,7 @@ const handleDelete = async (department: Department) => {
       }
     );
 
+    deleteLoading.value = true;
     await departmentApi.deleteDepartment([department.id]);
     ElMessage.success("删除成功");
     loadDepartmentList();
@@ -557,6 +650,48 @@ const handleDelete = async (department: Department) => {
         error.response?.data?.message || error.message || "删除失败"
       );
     }
+  } finally {
+    deleteLoading.value = false;
+  }
+};
+
+/**
+ * 处理批量删除
+ */
+const handleBatchDelete = async () => {
+  if (selectedRows.value.length === 0) {
+    ElMessage.warning("请选择要删除的部门");
+    return;
+  }
+
+  try {
+    const departmentNames = selectedRows.value
+      .map((dept) => dept.name)
+      .join("、");
+    await ElMessageBox.confirm(
+      `确定要删除以下部门吗？\n${departmentNames}\n删除后将同时删除其下所有子部门！`,
+      "批量删除确认",
+      {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      }
+    );
+
+    deleteLoading.value = true;
+    const ids = selectedRows.value.map((dept) => dept.id);
+    await departmentApi.deleteDepartment(ids);
+    ElMessage.success("批量删除成功");
+    selectedRows.value = [];
+    loadDepartmentList();
+  } catch (error: any) {
+    if (error !== "cancel") {
+      ElMessage.error(
+        error.response?.data?.message || error.message || "批量删除失败"
+      );
+    }
+  } finally {
+    deleteLoading.value = false;
   }
 };
 
@@ -613,6 +748,7 @@ const resetForm = () => {
     phone: "",
     email: "",
     status: true,
+    remark: "",
   });
   formRef.value?.clearValidate();
 };

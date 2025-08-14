@@ -34,6 +34,11 @@ const routes: RouteRecordRaw[] = [
     component: () => import("../views/DepartmentManagement.vue"),
   },
   {
+    path: "/menu-management",
+    name: "MenuManagement",
+    component: () => import("../views/MenuManagement.vue"),
+  },
+  {
     path: "/sub-app-management",
     name: "SubAppManagement",
     component: () => import("../views/SubAppManagement.vue"),

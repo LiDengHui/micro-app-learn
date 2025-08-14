@@ -44,11 +44,30 @@
             :value="dept.id"
           />
         </el-select>
+        <el-select
+          v-model="searchQuery.status"
+          placeholder="选择状态"
+          style="width: 120px; margin-right: 10px"
+          clearable
+          @change="handleSearch"
+        >
+          <el-option label="启用" :value="true" />
+          <el-option label="禁用" :value="false" />
+        </el-select>
       </div>
       <div class="action-buttons">
         <el-button type="primary" @click="handleCreate">
           <el-icon><Plus /></el-icon>
           新增用户
+        </el-button>
+        <el-button
+          type="danger"
+          :disabled="selectedRows.length === 0"
+          :loading="deleteLoading"
+          @click="handleBatchDelete"
+        >
+          <el-icon><Delete /></el-icon>
+          批量删除
         </el-button>
         <el-button @click="refreshData">
           <el-icon><Refresh /></el-icon>
@@ -65,8 +84,10 @@
         style="width: 100%"
         border
         stripe
+        @selection-change="handleSelectionChange"
       >
-        <el-table-column prop="id" label="ID" width="80" />
+        <el-table-column type="selection" width="55" />
+        <el-table-column type="index" label="序号" width="60" />
         <el-table-column prop="username" label="用户名" width="120" />
         <el-table-column prop="account" label="账号" width="120" />
         <el-table-column prop="nickname" label="昵称" width="120" />
@@ -74,7 +95,13 @@
         <el-table-column prop="mobile" label="手机号" width="140" />
         <el-table-column prop="sex" label="性别" width="80">
           <template #default="{ row }">
-            {{ row.sex === 1 ? "男" : row.sex === 2 ? "女" : "未知" }}
+            <el-tag
+              :type="
+                row.sex === 1 ? 'primary' : row.sex === 2 ? 'success' : 'info'
+              "
+            >
+              {{ row.sex === 1 ? "男" : row.sex === 2 ? "女" : "未知" }}
+            </el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="department" label="部门" width="120">
@@ -85,6 +112,13 @@
         <el-table-column prop="role" label="角色" width="120">
           <template #default="{ row }">
             {{ row.role?.name || "-" }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="status" label="状态" width="100">
+          <template #default="{ row }">
+            <el-tag :type="row.status ? 'success' : 'danger'">
+              {{ row.status ? "启用" : "禁用" }}
+            </el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="login_date" label="最后登录" width="180">
@@ -99,13 +133,32 @@
         </el-table-column>
         <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
-            <el-button size="small" @click="handleView(row)">查看</el-button>
-            <el-button size="small" type="primary" @click="handleEdit(row)"
-              >编辑</el-button
-            >
-            <el-button size="small" type="danger" @click="handleDelete(row)"
-              >删除</el-button
-            >
+            <TableActionButtons :max-visible="1">
+              <el-button
+                size="small"
+                type="primary"
+                link
+                @click="handleEdit(row)"
+              >
+                编辑
+              </el-button>
+              <el-button
+                size="small"
+                type="success"
+                link
+                @click="handleView(row)"
+              >
+                查看
+              </el-button>
+              <el-button
+                size="small"
+                type="danger"
+                link
+                @click="handleDelete(row)"
+              >
+                删除
+              </el-button>
+            </TableActionButtons>
           </template>
         </el-table-column>
       </el-table>
@@ -228,6 +281,15 @@
               </el-select>
             </el-form-item>
           </el-col>
+          <el-col :span="12">
+            <el-form-item label="状态" prop="status">
+              <el-switch
+                v-model="userForm.status"
+                active-text="启用"
+                inactive-text="禁用"
+              />
+            </el-form-item>
+          </el-col>
         </el-row>
 
         <el-form-item label="备注" prop="remark">
@@ -264,7 +326,9 @@ import {
   Plus,
   Refresh,
   User as UserIcon,
+  Delete,
 } from "@element-plus/icons-vue";
+import TableActionButtons from "../components/TableActionButtons.vue";
 import {
   userApi,
   type User,
@@ -284,6 +348,7 @@ const searchQuery = reactive({
   username: "",
   account: "",
   departmentId: null as number | null,
+  status: null as boolean | null,
 });
 const dialogVisible = ref(false);
 const dialogMode = ref<"create" | "edit" | "view">("create");
@@ -301,6 +366,7 @@ const userForm = reactive<
     sex?: number | null;
     roleId?: number | null;
     departmentId?: number | null;
+    status?: boolean;
   }
 >({
   username: "",
@@ -312,8 +378,12 @@ const userForm = reactive<
   sex: null,
   roleId: null,
   departmentId: null,
+  status: true,
   remark: "",
 });
+
+const selectedRows = ref<User[]>([]);
+const deleteLoading = ref(false);
 
 // ==================== 计算属性 ====================
 const dialogTitle = computed(() => {
@@ -387,6 +457,7 @@ const loadUserList = async () => {
       username: searchQuery.username || undefined,
       account: searchQuery.account || undefined,
       departmentId: searchQuery.departmentId || undefined,
+      status: searchQuery.status !== null ? searchQuery.status : undefined,
     });
 
     // 修正: 使用正确的常量和数据结构
@@ -443,6 +514,13 @@ const loadRoles = async () => {
 const handleSearch = () => {
   pagination.page = 1;
   loadUserList();
+};
+
+/**
+ * 处理表格选择变化
+ */
+const handleSelectionChange = (selection: User[]) => {
+  selectedRows.value = selection;
 };
 
 /**
@@ -521,6 +599,7 @@ const handleDelete = async (user: User) => {
       }
     );
 
+    deleteLoading.value = true;
     await userApi.deleteUser(user.id);
     ElMessage.success("删除成功");
     loadUserList();
@@ -530,6 +609,50 @@ const handleDelete = async (user: User) => {
         error.response?.data?.message || error.message || "删除失败"
       );
     }
+  } finally {
+    deleteLoading.value = false;
+  }
+};
+
+/**
+ * 处理批量删除
+ */
+const handleBatchDelete = async () => {
+  if (selectedRows.value.length === 0) {
+    ElMessage.warning("请选择要删除的用户");
+    return;
+  }
+
+  try {
+    const userNames = selectedRows.value
+      .map((user) => user.username)
+      .join("、");
+    await ElMessageBox.confirm(
+      `确定要删除以下用户吗？\n${userNames}`,
+      "批量删除确认",
+      {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      }
+    );
+
+    deleteLoading.value = true;
+    const deletePromises = selectedRows.value.map((user) =>
+      userApi.deleteUser(user.id)
+    );
+    await Promise.all(deletePromises);
+    ElMessage.success("批量删除成功");
+    selectedRows.value = [];
+    loadUserList();
+  } catch (error: any) {
+    if (error !== "cancel") {
+      ElMessage.error(
+        error.response?.data?.message || error.message || "批量删除失败"
+      );
+    }
+  } finally {
+    deleteLoading.value = false;
   }
 };
 
@@ -577,6 +700,7 @@ const resetForm = () => {
     sex: null,
     roleId: null,
     departmentId: null,
+    status: true,
     remark: "",
   });
   formRef.value?.clearValidate();

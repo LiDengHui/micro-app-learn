@@ -1,10 +1,7 @@
 <template>
   <div class="table-action-buttons">
     <!-- 显示前几个按钮 -->
-    <template
-      v-for="(button, index) in visibleButtons"
-      :key="`visible-${index}`"
-    >
+    <template v-for="button in visibleButtons" :key="`visible-${index}`">
       <component :is="button" />
     </template>
 

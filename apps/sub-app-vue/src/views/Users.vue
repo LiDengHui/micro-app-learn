@@ -1,86 +1,113 @@
 <template>
   <div class="list-page">
-    <el-card>
-      <template #header>
-        <div class="page-header">
-          <h1>用户管理</h1>
-          <p>管理系统用户信息</p>
-          <div class="header-actions">
-            <el-button type="success" @click="addUser">添加用户</el-button>
-            <el-button type="primary" @click="$router.push('/')"
-              >返回首页</el-button
-            >
-          </div>
-        </div>
-      </template>
+    <div class="page-header">
+      <h1>用户管理</h1>
+      <p>管理系统用户信息</p>
+    </div>
 
-      <div class="users-content">
-        <el-row :gutter="20">
-          <el-col :span="24">
-            <el-table :data="users" style="width: 100%">
-              <el-table-column prop="id" label="用户ID" width="100" />
-              <el-table-column prop="name" label="姓名" width="120" />
-              <el-table-column prop="email" label="邮箱" width="200" />
-              <el-table-column prop="phone" label="电话" width="150" />
-              <el-table-column prop="role" label="角色" width="120">
-                <template #default="scope">
-                  <el-tag :type="getRoleType(scope.row.role)">
-                    {{ scope.row.role }}
-                  </el-tag>
-                </template>
-              </el-table-column>
-              <el-table-column prop="status" label="状态" width="120">
-                <template #default="scope">
-                  <el-switch
-                    v-model="scope.row.status"
-                    :active-value="'active'"
-                    :inactive-value="'inactive'"
-                    @change="handleStatusChange(scope.row)"
-                  />
-                </template>
-              </el-table-column>
-              <el-table-column prop="createTime" label="创建时间" width="180" />
-              <el-table-column label="操作" width="200">
-                <template #default="scope">
-                  <el-button size="small" @click="viewUser(scope.row)"
-                    >查看</el-button
-                  >
-                  <el-button
-                    size="small"
-                    type="primary"
-                    @click="editUser(scope.row)"
-                    >编辑</el-button
-                  >
-                  <el-button
-                    size="small"
-                    type="danger"
-                    @click="deleteUser(scope.row)"
-                    >删除</el-button
-                  >
-                </template>
-              </el-table-column>
-            </el-table>
-          </el-col>
-        </el-row>
-
-        <div class="pagination-wrapper">
-          <el-pagination
-            v-model:current-page="currentPage"
-            v-model:page-size="pageSize"
-            :page-sizes="[10, 20, 50, 100]"
-            :total="total"
-            layout="total, sizes, prev, pager, next, jumper"
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-          />
-        </div>
+    <!-- 搜索和操作栏 -->
+    <div class="toolbar">
+      <div class="search-box">
+        <el-input
+          v-model="searchQuery"
+          placeholder="搜索用户"
+          style="width: 200px; margin-right: 10px"
+          clearable
+          @input="handleSearch"
+        >
+          <template #prefix>
+            <el-icon><Search /></el-icon>
+          </template>
+        </el-input>
       </div>
-    </el-card>
+      <div class="action-buttons">
+        <el-button type="primary" @click="addUser">
+          <el-icon><Plus /></el-icon>
+          添加用户
+        </el-button>
+        <el-button @click="$router.push('/')">
+          <el-icon><Back /></el-icon>
+          返回首页
+        </el-button>
+      </div>
+    </div>
+
+    <!-- 用户表格 -->
+    <div class="table-container">
+      <el-table
+        v-loading="loading"
+        :data="filteredUsers"
+        style="width: 100%"
+        border
+        stripe
+      >
+        <el-table-column type="index" label="序号" width="60" />
+        <el-table-column prop="id" label="用户ID" width="100" />
+        <el-table-column prop="name" label="姓名" width="120" />
+        <el-table-column prop="email" label="邮箱" width="200" />
+        <el-table-column prop="phone" label="电话" width="150" />
+        <el-table-column prop="role" label="角色" width="120">
+          <template #default="{ row }">
+            <el-tag :type="getRoleType(row.role)">
+              {{ row.role }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="status" label="状态" width="120">
+          <template #default="{ row }">
+            <el-tag :type="row.status === 'active' ? 'success' : 'info'">
+              {{ row.status === "active" ? "启用" : "禁用" }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="createTime" label="创建时间" width="180" />
+        <el-table-column label="操作" width="200" fixed="right">
+          <template #default="{ row }">
+            <TableActionButtons :max-visible="1">
+              <el-button size="small" type="info" link @click="viewUser(row)">
+                查看
+              </el-button>
+              <el-button
+                size="small"
+                type="primary"
+                link
+                @click="editUser(row)"
+              >
+                编辑
+              </el-button>
+              <el-button
+                size="small"
+                type="danger"
+                link
+                @click="deleteUser(row)"
+              >
+                删除
+              </el-button>
+            </TableActionButtons>
+          </template>
+        </el-table-column>
+      </el-table>
+    </div>
+
+    <!-- 分页 -->
+    <div class="pagination-container">
+      <el-pagination
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :page-sizes="[10, 20, 50, 100]"
+        :total="total"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
+import { Search, Plus, Back } from "@element-plus/icons-vue";
+import TableActionButtons from "../components/TableActionButtons.vue";
 
 interface User {
   id: string;
@@ -92,11 +119,15 @@ interface User {
   createTime: string;
 }
 
+// 响应式数据
+const loading = ref(false);
+const searchQuery = ref("");
 const users = ref<User[]>([]);
 const currentPage = ref(1);
 const pageSize = ref(10);
 const total = ref(0);
 
+// 模拟数据
 const mockUsers: User[] = [
   {
     id: "U001",
@@ -145,6 +176,20 @@ const mockUsers: User[] = [
   },
 ];
 
+// 计算属性
+const filteredUsers = computed(() => {
+  if (!searchQuery.value) {
+    return users.value;
+  }
+  return users.value.filter(
+    (user) =>
+      user.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+      user.role.toLowerCase().includes(searchQuery.value.toLowerCase())
+  );
+});
+
+// 方法
 const getRoleType = (role: string) => {
   switch (role) {
     case "管理员":
@@ -156,6 +201,10 @@ const getRoleType = (role: string) => {
     default:
       return "info";
   }
+};
+
+const handleSearch = () => {
+  // 搜索逻辑已在计算属性中处理
 };
 
 const addUser = () => {
@@ -174,10 +223,6 @@ const deleteUser = (user: User) => {
   console.log("删除用户:", user);
 };
 
-const handleStatusChange = (user: User) => {
-  console.log("用户状态变更:", user);
-};
-
 const handleSizeChange = (val: number) => {
   pageSize.value = val;
   // 这里可以重新加载数据
@@ -188,6 +233,7 @@ const handleCurrentChange = (val: number) => {
   // 这里可以重新加载数据
 };
 
+// 生命周期
 onMounted(() => {
   users.value = mockUsers;
   total.value = mockUsers.length;
@@ -195,25 +241,5 @@ onMounted(() => {
 </script>
 
 <style scoped>
-@import '../styles/common.scss';
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.header-actions {
-  display: flex;
-  gap: 10px;
-}
-
-.users-content {
-  margin-top: 20px;
-}
-
-.pagination-wrapper {
-  margin-top: 20px;
-  text-align: center;
-}
+@import "../styles/common.scss";
 </style>

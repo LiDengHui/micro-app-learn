@@ -12,6 +12,12 @@ const routeMenuMap: Record<string, { title: string; path: string }> = {
   "/orders": { title: "订单列表", path: "/orders" },
   "/users": { title: "用户管理", path: "/users" },
   "/user-management": { title: "用户管理系统", path: "/user-management" },
+  "/role-management": { title: "角色管理系统", path: "/role-management" },
+  "/department-management": {
+    title: "部门管理系统",
+    path: "/department-management",
+  },
+  "/menu-management": { title: "菜单管理系统", path: "/menu-management" },
   "/sub-app-management": { title: "子应用管理", path: "/sub-app-management" },
   "/products": { title: "产品管理", path: "/products" },
 };

@@ -14,7 +14,7 @@ export interface MenuGroup {
 }
 
 export function buildMenuData(): MenuGroup[] {
-  return [
+  const menuData = [
     {
       title: subApps["react-app"].title,
       children: [
@@ -78,6 +78,11 @@ export function buildMenuData(): MenuGroup[] {
           path: "/department-management",
         },
         {
+          title: "菜单管理系统",
+          name: subApps["vue-app"].name,
+          path: "/menu-management",
+        },
+        {
           title: "子应用管理",
           name: subApps["vue-app"].name,
           path: "/sub-app-management",
@@ -106,4 +111,35 @@ export function buildMenuData(): MenuGroup[] {
       ],
     },
   ];
+
+  // 调试：打印菜单数据
+  console.log("构建的菜单数据:", menuData);
+
+  return menuData;
+}
+
+// 调试函数：验证菜单数据
+export function debugMenuData() {
+  const menuData = buildMenuData();
+  console.log("=== 菜单数据调试信息 ===");
+
+  menuData.forEach((group, groupIndex) => {
+    console.log(`组 ${groupIndex + 1}: ${group.title}`);
+    group.children.forEach((item, itemIndex) => {
+      console.log(
+        `  - 项目 ${itemIndex + 1}: ${item.title} (${item.name}:${item.path})`
+      );
+      if (item.children) {
+        item.children.forEach((subItem, subIndex) => {
+          console.log(
+            `    - 子项目 ${subIndex + 1}: ${subItem.title} (${subItem.name}:${
+              subItem.path
+            })`
+          );
+        });
+      }
+    });
+  });
+
+  return menuData;
 }

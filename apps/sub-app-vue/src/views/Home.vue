@@ -1,9 +1,18 @@
 <template>
-  <div class="vue-sub-app">
+  <div class="list-page">
+    <div class="page-header">
+      <h1>Vue 子应用 - 首页</h1>
+      <p>使用主应用的 Element Plus 组件库</p>
+    </div>
+
+    <!-- 欢迎卡片 -->
     <el-card class="welcome-card">
       <template #header>
         <div class="card-header">
-          <span>Vue 子应用 - 首页</span>
+          <span class="card-title">
+            <el-icon><HomeFilled /></el-icon>
+            欢迎使用
+          </span>
           <el-tag type="success">使用主应用的 Element Plus</el-tag>
         </div>
       </template>
@@ -56,27 +65,18 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
+import { HomeFilled } from "@element-plus/icons-vue";
 import HelloWorld from "../components/HelloWorld.vue";
 
 const inputValue = ref("");
 </script>
 
 <style scoped>
-.vue-sub-app {
-  padding: 20px;
-  background: #f5f5f5;
-  min-height: 100vh;
-}
+@import "../styles/common.scss";
 
 .welcome-card {
   max-width: 800px;
   margin: 0 auto;
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 }
 
 .content {

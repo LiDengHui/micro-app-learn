@@ -142,32 +142,32 @@
             <template #default="{ row }">
               <TableActionButtons :max-visible="1">
                 <el-button
-                  type="primary"
                   size="small"
+                  type="primary"
                   @click="handleViewVersionDetail(row)"
                 >
                   查看详情
                 </el-button>
                 <el-button
                   v-if="!row.isCurrentVersion && row.status !== 'deprecated'"
-                  type="success"
                   size="small"
+                  type="success"
                   @click="handleRollback(row)"
                 >
                   回滚到此版本
                 </el-button>
                 <el-button
                   v-if="!row.isCurrentVersion"
-                  type="warning"
                   size="small"
+                  type="warning"
                   @click="handleUpdateStatus(row)"
                 >
                   更新状态
                 </el-button>
                 <el-button
                   v-if="!row.isCurrentVersion"
-                  type="danger"
                   size="small"
+                  type="danger"
                   @click="handleDeleteVersion(row)"
                 >
                   删除
@@ -651,55 +651,10 @@ onMounted(() => {
 <style scoped>
 @import "../styles/common.scss";
 
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #e4e7ed;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.header-actions {
-  display: flex;
-  gap: 12px;
-}
-
-.loading-container {
-  padding: 40px;
-  text-align: center;
-}
-
 .version-history-container {
   display: flex;
   flex-direction: column;
   gap: 20px;
-}
-
-.search-card,
-.version-list-card {
-  margin-bottom: 0;
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.card-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #303133;
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
 .version-info {
@@ -711,12 +666,6 @@ onMounted(() => {
 .version-number {
   font-weight: 600;
   color: #409eff;
-}
-
-.pagination-wrapper {
-  margin-top: 20px;
-  display: flex;
-  justify-content: center;
 }
 
 /* 版本详情对话框样式 */
