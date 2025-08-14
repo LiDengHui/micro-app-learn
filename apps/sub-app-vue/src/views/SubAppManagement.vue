@@ -117,6 +117,14 @@
           </template>
         </el-table-column>
 
+        <el-table-column prop="code" label="应用代码" width="120">
+          <template #default="{ row }">
+            <el-tag type="warning" size="small" class="code-tag">
+              {{ row.code }}
+            </el-tag>
+          </template>
+        </el-table-column>
+
         <el-table-column prop="version" label="版本号" width="100" />
 
         <el-table-column
@@ -470,6 +478,11 @@ onMounted(() => {
 
 .app-icon {
   color: #409eff;
+}
+
+.code-tag {
+  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+  font-size: 11px;
 }
 
 :deep(.el-upload-dragger) {

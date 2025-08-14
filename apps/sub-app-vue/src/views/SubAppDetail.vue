@@ -44,8 +44,55 @@
           <el-descriptions-item label="应用名称">
             <span class="app-name">{{ subAppDetail.name }}</span>
           </el-descriptions-item>
+          <el-descriptions-item label="应用代码">
+            <el-tag type="warning" class="code-tag">{{
+              subAppDetail.code
+            }}</el-tag>
+            <el-button
+              size="small"
+              type="text"
+              @click="copyToClipboard(subAppDetail.code)"
+              style="margin-left: 8px"
+            >
+              复制
+            </el-button>
+          </el-descriptions-item>
           <el-descriptions-item label="版本号">
             <el-tag type="info">{{ subAppDetail.version }}</el-tag>
+          </el-descriptions-item>
+          <el-descriptions-item label="应用密钥">
+            <div class="app-key-container">
+              <el-input
+                v-if="subAppDetail.appKey"
+                :value="subAppDetail.appKey"
+                readonly
+                size="small"
+                style="width: 200px"
+              >
+                <template #append>
+                  <el-button @click="copyToClipboard(subAppDetail.appKey)">
+                    复制
+                  </el-button>
+                </template>
+              </el-input>
+              <el-button
+                v-else
+                type="primary"
+                size="small"
+                @click="handleGenerateAppKey"
+              >
+                生成 AppKey
+              </el-button>
+              <el-button
+                v-if="subAppDetail.appKey"
+                type="warning"
+                size="small"
+                @click="handleRegenerateAppKey"
+                style="margin-left: 8px"
+              >
+                重新生成
+              </el-button>
+            </div>
           </el-descriptions-item>
           <el-descriptions-item label="状态">
             <el-tag :type="getStatusType(subAppDetail.status)">
@@ -252,8 +299,10 @@ import {
   getSubAppDetail,
   deleteSubApp,
   updateSubAppStatus,
+  generateAppKey,
   type SubAppInfo,
 } from "../api/subApp";
+import { copyToClipboard } from "../utils/clipboard";
 
 // ==================== 响应式数据 ====================
 const route = useRoute();
@@ -382,15 +431,56 @@ const handleViewLogs = () => {
 };
 
 /**
- * 复制到剪贴板
+ * 处理生成 AppKey
  */
-const copyToClipboard = async (text: string) => {
+const handleGenerateAppKey = async () => {
+  if (!subAppDetail.value) return;
+
   try {
-    await navigator.clipboard.writeText(text);
-    ElMessage.success("复制成功");
+    const response = await generateAppKey(subAppDetail.value.id.toString());
+    if (response.code === 200) {
+      ElMessage.success("AppKey 生成成功");
+      // 重新加载详情
+      await loadSubAppDetail();
+    } else {
+      ElMessage.error(response.message || "生成 AppKey 失败");
+    }
   } catch (error) {
-    console.error("复制失败:", error);
-    ElMessage.error("复制失败");
+    console.error("生成 AppKey 失败:", error);
+    ElMessage.error("生成 AppKey 失败");
+  }
+};
+
+/**
+ * 处理重新生成 AppKey
+ */
+const handleRegenerateAppKey = async () => {
+  if (!subAppDetail.value) return;
+
+  try {
+    await ElMessageBox.confirm(
+      "重新生成 AppKey 将使当前的 AppKey 失效，确定要继续吗？",
+      "确认重新生成",
+      {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      }
+    );
+
+    const response = await generateAppKey(subAppDetail.value.id.toString());
+    if (response.code === 200) {
+      ElMessage.success("AppKey 重新生成成功");
+      // 重新加载详情
+      await loadSubAppDetail();
+    } else {
+      ElMessage.error(response.message || "重新生成 AppKey 失败");
+    }
+  } catch (error) {
+    if (error !== "cancel") {
+      console.error("重新生成 AppKey 失败:", error);
+      ElMessage.error("重新生成 AppKey 失败");
+    }
   }
 };
 
@@ -449,6 +539,17 @@ onMounted(() => {
 .app-name {
   font-weight: 600;
   color: #409eff;
+}
+
+.code-tag {
+  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+  font-size: 12px;
+}
+
+.app-key-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .config-content {

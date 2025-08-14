@@ -8,6 +8,7 @@ import { createApiClient } from "@micro-frontend/shared-utils";
 export interface SubAppInfo {
   id: number;
   name: string; // 应用名称
+  code: string; // 应用代码，唯一标识，创建后不可修改
   version: string; // 版本号
   description?: string; // 描述
   packagePath: string; // 包文件路径
@@ -17,6 +18,7 @@ export interface SubAppInfo {
   status: "active" | "inactive" | "maintenance"; // 应用状态
   fileSize?: string | null; // 文件大小
   checksum?: string | null; // 文件校验和
+  appKey?: string; // 应用密钥，用于校验，可以重新生成
   createdAt?: string; // 创建时间
   updatedAt?: string; // 更新时间
   sort?: number; // 排序
@@ -245,6 +247,30 @@ export const updateSubAppInfo = async (
   payload: Partial<SubAppInfo>
 ): Promise<{ code: number; message: string; data: SubAppInfo }> => {
   const response = await api.patch(`/subapps/${id}`, payload);
+  return response;
+};
+
+/**
+ * 生成或重新生成 appKey
+ */
+export const generateAppKey = async (
+  id: string
+): Promise<{ code: number; message: string; data: SubAppInfo }> => {
+  const response = await api.post(`/subapps/${id}/generate-app-key`);
+  return response;
+};
+
+/**
+ * 验证 appKey 是否与 code 匹配
+ */
+export const validateAppKey = async (
+  code: string,
+  appKey: string
+): Promise<{ code: number; message: string; data: { isValid: boolean } }> => {
+  const response = await api.post("/subapps/validate-app-key", {
+    code,
+    appKey,
+  });
   return response;
 };
 

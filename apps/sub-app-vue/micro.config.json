@@ -1,0 +1,58 @@
+{
+  "code": "vue-admin",
+  "appKey": "bec048df8a86954055e2e2513397af39d126c9251fb184e5cb609a7ec9d7e7fb",
+  "pages": {
+    "user-management": {
+      "path": "/user-management",
+      "name": "用户管理",
+      "permission": {
+        "edit": "编辑",
+        "delete": "删除",
+        "view": "查看",
+        "add": "添加",
+        "export": "导出",
+        "import": "导入"
+      }
+    },
+    "role-management": {
+      "path": "/role-management",
+      "name": "角色管理",
+      "permission": {
+        "edit": "编辑",
+        "delete": "删除",
+        "view": "查看",
+        "add": "添加",
+        "export": "导出",
+        "import": "导入"
+      }
+    },
+    "permission-management": {
+      "path": "/permission-management",
+      "name": "权限管理",
+      "permission": {
+        "edit": "编辑",
+        "delete": "删除"
+      }
+    },
+    "menu-management": {
+      "path": "/menu-management",
+      "name": "菜单管理",
+      "permission": {
+        "edit": "编辑",
+        "delete": "删除"
+      }
+    },
+    "sub-app-management": {
+      "path": "/sub-app-management",
+      "name": "子应用管理",
+      "permission": {
+        "edit": "编辑",
+        "delete": "删除",
+        "view": "查看",
+        "add": "添加",
+        "export": "导出",
+        "import": "导入"
+      }
+    }
+  }
+}

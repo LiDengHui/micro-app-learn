@@ -28,6 +28,7 @@ import { useNavigationStore } from "../stores/navigation";
 import eventBus from "../utils/eventBus";
 import { MENU_UPDATE } from "../constants/events";
 import { onUnmounted } from "vue";
+import { ElMessage } from "element-plus";
 
 // ==================== 类型定义 ====================
 interface Props {
@@ -57,6 +58,16 @@ interface MenuUpdateEvent {
   menuPath: string;
 }
 
+// 复制到剪贴板事件类型
+interface CopyToClipboardEvent {
+  name: string;
+  data: {
+    text: string;
+    successMessage: string;
+    errorMessage: string;
+  };
+}
+
 // ==================== 组合式函数 ====================
 const props = defineProps<Props>();
 const router = useRouter();
@@ -83,6 +94,8 @@ const handleBeforemount = () => {
       handleRouteChange(data);
     } else if (data.name === "navigate-to-main") {
       handleNavigateToMain(data);
+    } else if (data.name === "copy-to-clipboard") {
+      handleCopyToClipboard(data);
     }
   });
   console.log(`已设置子应用 ${props.appName} 数据监听器`);
@@ -189,6 +202,48 @@ const handleNavigateToMain = (data: any) => {
 
   // 跳转到主应用首页
   router.push(data.data?.path || "/");
+};
+
+/**
+ * 处理复制到剪贴板请求
+ */
+const handleCopyToClipboard = async (data: CopyToClipboardEvent) => {
+  console.log("收到复制请求:", data);
+  try {
+    const { text, successMessage, errorMessage } = data.data;
+
+    // 使用现代的 Clipboard API
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      console.log("复制成功:", text);
+      ElMessage.success(successMessage);
+      return;
+    }
+
+    // 降级方案：使用传统的 document.execCommand
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.left = "-999999px";
+    textArea.style.top = "-999999px";
+    textArea.style.opacity = "0";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    const successful = document.execCommand("copy");
+    document.body.removeChild(textArea);
+
+    if (successful) {
+      console.log("复制成功:", text);
+      ElMessage.success(successMessage);
+    } else {
+      throw new Error("document.execCommand 复制失败");
+    }
+  } catch (error) {
+    console.error("复制失败:", error);
+    ElMessage.error(data.data.errorMessage);
+  }
 };
 
 // ==================== 生命周期 ====================

@@ -6,6 +6,16 @@
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./vite-plugin-micro-config": {
+      "import": "./dist/vite-plugin-micro-config.js",
+      "types": "./dist/vite-plugin-micro-config.d.ts"
+    }
+  },
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",

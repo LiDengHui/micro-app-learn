@@ -5,9 +5,14 @@
       <div class="header-left">
         <el-button @click="$router.back()" icon="ArrowLeft"> 返回 </el-button>
         <h1>版本历史</h1>
-        <el-tag v-if="subAppInfo" type="info" size="large">
-          {{ subAppInfo.name }}
-        </el-tag>
+        <div v-if="subAppInfo" class="app-info">
+          <el-tag type="info" size="large">
+            {{ subAppInfo.name }}
+          </el-tag>
+          <el-tag type="warning" size="large" class="code-tag">
+            {{ subAppInfo.code }}
+          </el-tag>
+        </div>
       </div>
       <div class="header-actions">
         <el-button
@@ -655,6 +660,17 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 20px;
+}
+
+.app-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.code-tag {
+  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+  font-size: 12px;
 }
 
 .version-info {

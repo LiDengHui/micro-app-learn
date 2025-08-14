@@ -1,7 +1,10 @@
 <template>
   <div class="table-action-buttons">
     <!-- 显示前几个按钮 -->
-    <template v-for="button in visibleButtons" :key="`visible-${index}`">
+    <template
+      v-for="(button, _index) in visibleButtons"
+      :key="getButtonKey(button, _index, 'visible-')"
+    >
       <component :is="button" />
     </template>
 
@@ -16,9 +19,9 @@
       <template #dropdown>
         <el-dropdown-menu>
           <el-dropdown-item
-            v-for="(button, index) in dropdownButtons"
-            :key="`dropdown-${index}`"
-            :command="`button-${index + maxVisible}`"
+            v-for="(button, _index) in dropdownButtons"
+            :key="getButtonKey(button, _index, 'dropdown-')"
+            :command="`button-${_index + maxVisible}`"
           >
             <span class="dropdown-button-text">{{
               getButtonText(button)
@@ -56,19 +59,8 @@ const allButtons = computed(() => {
   const extractButtons = (nodes: any[]): VNode[] => {
     const buttons: VNode[] = [];
 
-    if (import.meta.env.DEV) {
-      console.log("=== 提取按钮节点调试信息 ===");
-      console.log("传入的nodes:", nodes);
-    }
-
     for (const node of nodes) {
       if (!node) continue;
-
-      if (import.meta.env.DEV) {
-        console.log("处理node:", node);
-        console.log("node.type:", node.type);
-        console.log("node.children:", node.children);
-      }
 
       if (typeof node === "object" && "type" in node) {
         // 检查是否是 el-button 组件
@@ -177,22 +169,22 @@ const getButtonText = (button: VNode): string => {
   try {
     const text = extractText(button);
 
-    // 调试信息（仅在开发环境下）
-    if (import.meta.env.DEV) {
-      console.log("=== 按钮VNode调试信息 ===");
-      console.log("VNode:", button);
-      console.log("VNode.type:", button.type);
-      console.log("VNode.props:", button.props);
-      console.log("VNode.children:", button.children);
-      console.log("提取的文本:", text);
-      console.log("========================");
-    }
-
     return text || "操作";
   } catch (error) {
     console.warn("提取按钮文本时出错:", error);
     return "操作";
   }
+};
+
+// 生成唯一的按钮 key
+const getButtonKey = (
+  button: VNode,
+  index: number,
+  prefix: string = ""
+): string => {
+  const text = getButtonText(button);
+  // 使用按钮文本和索引组合，确保唯一性
+  return `${prefix}${text}-${index}`;
 };
 
 // 处理下拉菜单命令

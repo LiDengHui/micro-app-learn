@@ -1,9 +1,16 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
+import { microConfigPlugin } from "@micro-frontend/shared-utils/vite-plugin-micro-config";
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [
+    vue(),
+    microConfigPlugin({
+      root: process.cwd(),
+      outputFileName: "micro.config.json",
+    }),
+  ],
   base: "/",
   server: {
     port: 7102,
