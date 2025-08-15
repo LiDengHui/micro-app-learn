@@ -121,6 +121,11 @@
             </el-tag>
           </template>
         </el-table-column>
+        <el-table-column prop="login_ip" label="登录IP" width="140">
+          <template #default="{ row }">
+            {{ row.login_ip || "-" }}
+          </template>
+        </el-table-column>
         <el-table-column prop="login_date" label="最后登录" width="180">
           <template #default="{ row }">
             {{ row.login_date ? formatDate(row.login_date) : "-" }}
