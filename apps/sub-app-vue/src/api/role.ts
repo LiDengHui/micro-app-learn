@@ -90,7 +90,7 @@ export const roleApi = {
   },
 
   // 获取所有角色（用于下拉选择）
-  getAllRoles: (): Promise<NestApiResponse<Role[]>> => {
+  getAllRoles: (): Promise<NestApiResponse<RoleListData>> => {
     return api.get("/admin/roles", { params: { limit: 1000 } });
   },
 

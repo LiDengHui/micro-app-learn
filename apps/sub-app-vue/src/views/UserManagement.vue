@@ -30,18 +30,34 @@
             <el-icon><UserIcon /></el-icon>
           </template>
         </el-input>
-        <el-select
+        <el-tree-select
           v-model="searchQuery.departmentId"
+          :data="departmentTreeData"
           placeholder="选择部门"
+          style="width: 200px; margin-right: 10px"
+          clearable
+          filterable
+          check-strictly
+          :props="{
+            children: 'children',
+            label: 'name',
+            value: 'id',
+          }"
+          @change="handleSearch"
+        />
+        <el-select
+          v-model="searchQuery.roleId"
+          placeholder="选择角色"
           style="width: 150px; margin-right: 10px"
           clearable
+          filterable
           @change="handleSearch"
         >
           <el-option
-            v-for="dept in departmentList"
-            :key="dept.id"
-            :label="dept.name"
-            :value="dept.id"
+            v-for="role in roleList"
+            :key="role.id"
+            :label="role.name"
+            :value="role.id"
           />
         </el-select>
         <el-select
@@ -258,17 +274,19 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="部门" prop="departmentId">
-              <el-select
+              <el-tree-select
                 v-model="userForm.departmentId"
+                :data="departmentTreeData"
                 placeholder="请选择部门"
-              >
-                <el-option
-                  v-for="dept in departmentList"
-                  :key="dept.id"
-                  :label="dept.name"
-                  :value="dept.id"
-                />
-              </el-select>
+                clearable
+                filterable
+                check-strictly
+                :props="{
+                  children: 'children',
+                  label: 'name',
+                  value: 'id',
+                }"
+              />
             </el-form-item>
           </el-col>
         </el-row>
@@ -276,9 +294,17 @@
         <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="角色" prop="roleId">
-              <el-select v-model="userForm.roleId" placeholder="请选择角色">
+              <el-select
+                v-model="userForm.roleId"
+                placeholder="请选择角色"
+                filterable
+                remote
+                :remote-method="filterRoles"
+                :loading="roleLoading"
+                clearable
+              >
                 <el-option
-                  v-for="role in roleList"
+                  v-for="role in filteredRoleList"
                   :key="role.id"
                   :label="role.name"
                   :value="role.id"
@@ -346,13 +372,16 @@ import { roleApi, type Role } from "../api/role";
 // ==================== 响应式数据 ====================
 const loading = ref(false);
 const submitLoading = ref(false);
+const roleLoading = ref(false);
 const userList = ref<User[]>([]);
-const departmentList = ref<Department[]>([]);
+const departmentTreeData = ref<Department[]>([]);
 const roleList = ref<Role[]>([]);
+const filteredRoleList = ref<Role[]>([]);
 const searchQuery = reactive({
   username: "",
   account: "",
   departmentId: null as number | null,
+  roleId: null as number | null,
   status: null as boolean | null,
 });
 const dialogVisible = ref(false);
@@ -462,6 +491,7 @@ const loadUserList = async () => {
       username: searchQuery.username || undefined,
       account: searchQuery.account || undefined,
       departmentId: searchQuery.departmentId || undefined,
+      roleId: searchQuery.roleId || undefined,
       status: searchQuery.status !== null ? searchQuery.status : undefined,
     });
 
@@ -485,8 +515,9 @@ const loadUserList = async () => {
 const loadDepartments = async () => {
   try {
     const response = await departmentApi.getAllDepartments();
-    if (response.data) {
-      departmentList.value = response.data;
+    if (response.data?.list) {
+      // 直接使用树形结构
+      departmentTreeData.value = response.data.list;
     }
   } catch (error: any) {
     console.error(
@@ -502,14 +533,50 @@ const loadDepartments = async () => {
 const loadRoles = async () => {
   try {
     const response = await roleApi.getAllRoles();
-    if (response.data) {
-      roleList.value = response.data;
+    if (response.data?.list) {
+      roleList.value = response.data.list;
+      filteredRoleList.value = response.data.list;
     }
   } catch (error: any) {
     console.error(
       "加载角色列表失败:",
       error.response?.data?.message || error.message
     );
+  }
+};
+
+/**
+ * 过滤角色列表
+ */
+const filterRoles = async (query: string) => {
+  if (query !== "") {
+    roleLoading.value = true;
+    try {
+      // 调用后端搜索接口
+      const response = await roleApi.getRoles({
+        page: 1,
+        limit: 1000,
+        name: query,
+      });
+      if (response.data?.list) {
+        filteredRoleList.value = response.data.list;
+      }
+    } catch (error: any) {
+      console.error(
+        "搜索角色失败:",
+        error.response?.data?.message || error.message
+      );
+      ElMessage.error("搜索角色失败");
+      // 如果搜索失败，回退到本地过滤
+      filteredRoleList.value = roleList.value.filter((role) =>
+        role.name.toLowerCase().includes(query.toLowerCase())
+      );
+    } finally {
+      roleLoading.value = false;
+    }
+  } else {
+    // 如果搜索词为空，显示所有角色
+    filteredRoleList.value = roleList.value;
   }
 };
 
@@ -567,11 +634,20 @@ const handleCreate = () => {
 const handleView = (user: User) => {
   dialogMode.value = "view";
   dialogVisible.value = true;
+  // 只复制需要的字段
   Object.assign(userForm, {
-    ...user,
+    id: user.id,
+    username: user.username,
+    email: user.email,
+    nickname: user.nickname,
+    mobile: user.mobile,
     sex: user.sex || null,
     roleId: user.roleId || null,
     departmentId: user.departmentId || null,
+    status: user.status,
+    remark: user.remark,
+    password: "", // 查看时不显示密码
+    account: "", // 后端返回的用户数据中没有 account 字段
   });
 };
 
@@ -581,11 +657,20 @@ const handleView = (user: User) => {
 const handleEdit = (user: User) => {
   dialogMode.value = "edit";
   dialogVisible.value = true;
+  // 只复制需要的字段
   Object.assign(userForm, {
-    ...user,
+    id: user.id,
+    username: user.username,
+    email: user.email,
+    nickname: user.nickname,
+    mobile: user.mobile,
     sex: user.sex || null,
     roleId: user.roleId || null,
     departmentId: user.departmentId || null,
+    status: user.status,
+    remark: user.remark,
+    password: "", // 编辑时密码为空，用户可以选择是否修改
+    account: "", // 后端返回的用户数据中没有 account 字段
   });
 };
 
@@ -672,11 +757,41 @@ const handleSubmit = async () => {
     submitLoading.value = true;
 
     if (dialogMode.value === "create") {
-      await userApi.createUser(userForm as CreateUserDto);
+      // 创建用户时，只传递需要的字段
+      const createData: CreateUserDto = {
+        username: userForm.username,
+        password: userForm.password,
+        account: userForm.account,
+        email: userForm.email,
+        nickname: userForm.nickname,
+        mobile: userForm.mobile,
+        sex: userForm.sex,
+        roleId: userForm.roleId,
+        departmentId: userForm.departmentId,
+        status: userForm.status,
+        remark: userForm.remark,
+      };
+      await userApi.createUser(createData);
       ElMessage.success("创建成功");
     } else if (dialogMode.value === "edit") {
-      const { username, password, ...updateData } = userForm;
-      await userApi.updateUser(userForm.id!, updateData as UpdateUserDto);
+      // 更新用户时，只传递需要的字段
+      const updateData: UpdateUserDto = {
+        username: userForm.username,
+        account: userForm.account,
+        email: userForm.email,
+        nickname: userForm.nickname,
+        mobile: userForm.mobile,
+        sex: userForm.sex,
+        roleId: userForm.roleId,
+        departmentId: userForm.departmentId,
+        status: userForm.status,
+        remark: userForm.remark,
+      };
+      // 如果密码不为空，则包含密码
+      if (userForm.password) {
+        updateData.password = userForm.password;
+      }
+      await userApi.updateUser(userForm.id!, updateData);
       ElMessage.success("更新成功");
     }
 

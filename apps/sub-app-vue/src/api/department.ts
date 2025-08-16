@@ -74,7 +74,7 @@ export const departmentApi = {
   },
 
   // 获取所有部门（用于下拉选择）
-  getAllDepartments: (): Promise<NestApiResponse<Department[]>> => {
+  getAllDepartments: (): Promise<NestApiResponse<DepartmentListData>> => {
     return api.get("/department", { params: { limit: 1000 } });
   },
 

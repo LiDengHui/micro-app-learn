@@ -73,6 +73,7 @@ export interface UserListQuery {
   username?: string;
   account?: string;
   departmentId?: number | null;
+  roleId?: number | null;
   status?: boolean;
 }
 
